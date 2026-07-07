@@ -195,17 +195,17 @@ body {
   letter-spacing: .05em; margin-bottom: 6px;
 }
 .step-box .step-title { font-size: 16.5px; font-weight: 800; line-height: 1.35; margin-bottom: 8px; }
-.step-box .step-body { font-size: 13.5px; line-height: 1.68; color: #37455f; }
-.step-box .step-body b { color: var(--ink); }
 .step-box .step-q {
   display: flex; gap: 9px; align-items: flex-start;
-  margin-top: 11px; padding: 11px 12px;
+  margin-bottom: 11px; padding: 11px 12px;
   background: #fff; border: 1px solid var(--line);
   border-left: 3.5px solid var(--accent);
   border-radius: 10px;
   font-size: 13px; line-height: 1.6; color: var(--ink); font-weight: 500;
 }
 .step-box .step-q .q-mark { flex: none; font-size: 15px; }
+.step-box .step-body { font-size: 13.5px; line-height: 1.68; color: #37455f; }
+.step-box .step-body b { color: var(--ink); }
 .step-box .nav { display: flex; gap: 9px; margin-top: 13px; }
 .step-box .nav button {
   flex: 1; font-family: inherit; font-size: 14px; font-weight: 700;

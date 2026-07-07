@@ -94,49 +94,50 @@ const WIND_BANDS = [
   { id: "polar",  name: "극동풍",  from: 80, to: 64, dLon:  36, n: 6, lonOff: 10, color: COL.windPolar }
 ];
 
-/* 이해 순서 — 7단계 (보기·레이어 자동 설정 + 강조 대상) */
+/* 이해 순서 — 7단계 (지구본 기준 수업 시나리오, 보기·레이어 자동 설정 + 강조 대상)
+   pressure: true인 단계부터 지구본에 저기압 L / 고기압 H 라벨 표시 */
 const STEPS = [
-  { title: "적도에서는 왜 공기가 올라갈까?", view: "cross",
-    layers: { cells:true, belts:true, winds:false, coriolis:false, precip:false, grid:false },
-    focus: ["cell-hadley", "rise0", "belt0"],
-    body: "적도 부근은 햇빛을 많이 받아 지표와 공기가 강하게 데워집니다. 데워진 공기는 가벼워져 <b>위로 올라가고</b>, 이곳에는 공기가 모여드는 <b>저압대</b>가 만들어집니다.",
-    q: "공기가 위로 올라가는 곳에서는 왜 구름과 비가 잘 만들어질까요?" },
+  { title: "대기대순환이란? — 위도별 일사량과 열적 불균형", view: "globe",
+    layers: { insol:true, cells:false, belts:false, winds:false, coriolis:false, precip:false, grid:true },
+    focus: null, pressure: false,
+    body: "지구는 둥글기 때문에 위도에 따라 태양 에너지를 받아들이는 <b>면적이 다릅니다</b>. 적도 부근은 <b>좁은 면적에 태양 에너지가 집중</b>되어 기온이 높고, 극지방으로 갈수록 <b>넓은 면적으로 분산</b>되어 기온이 낮습니다. 이렇게 생긴 적도와 극지방의 <b>열적 불균형</b>을 해소하기 위한 지구의 대기 흐름이 바로 <b>대기대순환</b>입니다.",
+    q: "같은 양의 햇빛인데, 왜 적도는 덥고 극지방은 추울까요?" },
 
-  { title: "올라간 공기는 어디로 갈까?", view: "cross",
-    layers: { cells:true, belts:true, winds:false, coriolis:false, precip:false, grid:false },
-    focus: ["cell-hadley", "sink30", "belt30"],
-    body: "적도에서 올라간 공기는 상층에서 남북으로 이동합니다. 이 공기는 <b>위도 30° 부근에서 다시 아래로 내려오며</b>, 이곳에는 <b>고압대</b>가 만들어집니다.",
-    q: "공기가 아래로 내려오는 곳은 비가 많을까요, 적을까요?" },
+  { title: "저위도 지역의 공기 흐름", view: "globe",
+    layers: { insol:false, cells:true, belts:true, winds:false, coriolis:false, precip:false, grid:false },
+    focus: ["cell-hadley", "rise0", "sink30", "belt0", "belt30"], pressure: false,
+    body: "적도 지방은 태양 에너지가 좁은 면적에 집중되어 기온이 높고, 데워진 공기가 <b>위로 올라갑니다</b>. 상승한 공기는 우주 밖으로 나가지 않고 특정 고도에 이르면 <b>양옆으로 퍼지며</b>, <b>위도 30° 부근에서 다시 하강</b>합니다. 하강한 공기는 지표를 따라 다시 양옆 — 적도 쪽과 위도 60° 쪽 — 으로 흘러갑니다.",
+    q: "상승한 공기는 왜 우주로 나가지 않고 위도 30° 부근에서 다시 내려올까요?" },
 
-  { title: "30° 부근에는 왜 사막이 많을까?", view: "cross",
-    layers: { cells:true, belts:true, winds:false, coriolis:false, precip:true, grid:false },
-    focus: ["sink30", "belt30", "dry"],
-    body: "위도 30° 부근에서는 공기가 아래로 내려옵니다. 공기가 내려오면 구름이 잘 만들어지지 않아 <b>비가 적고 건조한</b> 지역이 많아집니다. 그래서 사하라 사막, 아라비아 반도, 호주 내륙처럼 건조한 지역이 많이 나타납니다.",
-    q: "세계의 큰 사막들이 왜 대체로 위도 30° 부근에 많이 분포할까요?" },
+  { title: "고위도 지역의 공기 흐름", view: "globe",
+    layers: { insol:false, cells:true, belts:true, winds:false, coriolis:false, precip:false, grid:false },
+    focus: ["cell-polar", "cell-ferrel", "rise60", "sink90", "belt60", "belt90"], pressure: false,
+    body: "극지방은 태양 에너지가 넓은 면적에 분산되어 기온이 낮고, 차가워진 공기가 <b>아래로 하강</b>합니다. 하강한 공기는 지표면을 따라 퍼져 <b>위도 60° 부근까지</b> 내려오고, 저위도에서 올라오는 공기와 맞닿아 <b>다시 상승</b>합니다. 상승한 공기는 또다시 양옆 — 극지방 쪽과 위도 30° 쪽 — 으로 퍼집니다.",
+    q: "위도 60° 부근에서 공기가 다시 올라가는 까닭은 무엇일까요?" },
 
-  { title: "지구에는 공기의 큰 순환이 3개 있어요", view: "cross",
-    layers: { cells:true, belts:true, winds:false, coriolis:false, precip:false, grid:false },
-    focus: ["cell-hadley", "cell-ferrel", "cell-polar"],
-    body: "지구의 대기는 하나의 큰 고리로만 도는 것이 아니라, 위도에 따라 여러 개의 순환을 이룹니다. 적도와 30° 사이에는 <b>해들리 순환</b>, 30°와 60° 사이에는 <b>페렐 순환</b>, 60°와 극 사이에는 <b>극 순환</b>이 나타납니다.",
-    q: "공기가 올라가는 곳과 내려오는 곳을 기준으로 세 개의 순환을 구분해 볼 수 있을까요?" },
+  { title: "대기대순환 시스템의 형성", view: "globe",
+    layers: { insol:false, cells:true, belts:true, winds:false, coriolis:false, precip:false, grid:false },
+    focus: null, pressure: true,
+    body: "저위도와 고위도의 공기 흐름이 이어지면서 지구 대기에는 <b>3개의 순환 고리</b>(해들리·페렐·극 순환)가 만들어집니다. 공기가 <b>상승하는 적도와 위도 60° 부근</b>의 지표에서는 <b>저기압(L)</b>이, 공기가 <b>하강하는 위도 30°와 극지방 부근</b>의 지표에서는 <b>고기압(H)</b>이 나타납니다.",
+    q: "공기가 올라가는 곳과 내려오는 곳의 지표 기압은 왜 달라질까요?" },
 
-  { title: "땅 가까이에서는 바람이 어떻게 불까?", view: "globe",
-    layers: { cells:false, belts:true, winds:true, coriolis:true, precip:false, grid:true },
-    focus: ["winds"],
-    body: "지표면 가까이의 바람은 대체로 <b>고압대에서 저압대로</b> 붑니다. 하지만 지구가 자전하기 때문에 바람은 곧게만 불지 않고 <b>휘어집니다</b>. 이 때문에 무역풍, 편서풍, 극동풍 같은 바람대가 만들어집니다.",
-    q: "바람 휘어짐을 끄면 바람 방향이 어떻게 달라질까요?" },
+  { title: "강수 — 저기압은 비, 고기압은 맑음", view: "globe",
+    layers: { insol:false, cells:false, belts:true, winds:false, coriolis:false, precip:true, grid:false },
+    focus: null, pressure: true,
+    body: "공기가 <b>상승하는 지점(저기압)</b>에서는 대기 중에 구름이 만들어져 <b>강수가 발생</b>합니다. 반대로 공기가 <b>하강하는 지점(고기압)</b>에서는 구름이 적어 <b>맑은 날씨</b>가 나타납니다. 그래서 적도·위도 60° 부근은 비가 많고, 위도 30°·극지방 부근은 건조합니다.",
+    q: "적도 부근에는 열대 우림이, 위도 30° 부근에는 사막이 많은 이유는 무엇일까요?" },
 
-  { title: "올라가는 곳은 비, 내려오는 곳은 건조", view: "globe",
-    layers: { cells:false, belts:true, winds:true, coriolis:true, precip:true },
-    focus: ["belt0", "belt30", "belt60", "wet", "dry"],
-    body: "공기가 <b>올라가는 곳</b>에서는 구름이 만들어지기 쉬워 <b>비가 많습니다</b>. 반대로 공기가 <b>내려오는 곳</b>에서는 구름이 잘 만들어지지 않아 <b>건조합니다</b>. 이처럼 공기의 움직임은 세계 여러 지역의 강수량과 기후 차이를 만드는 중요한 원인입니다.",
-    q: "아마존과 사하라 사막의 기후 차이는 공기의 움직임과 어떻게 연결될까요?" },
+  { title: "바람 — 무역풍·편서풍·극동풍", view: "globe",
+    layers: { insol:false, cells:false, belts:true, winds:true, coriolis:true, precip:false, grid:false },
+    focus: ["winds"], pressure: true,
+    body: "대기대순환 속에서 지표면을 따라 움직이는 공기의 흐름이 <b>바람</b>입니다. 공기는 <b>고기압에서 저기압으로</b> 이동합니다. 여기에 지구 자전으로 바람의 방향이 <b>휘어지면서</b>, 30°→적도의 <b>무역풍</b>, 30°→60°의 <b>편서풍</b>, 극→60°의 <b>극동풍</b>이 나타납니다. <b>바람 휘어짐</b>을 껐다 켜며 비교해 보세요.",
+    q: "바람 휘어짐(전향력)을 끄면 바람의 방향은 어떻게 달라질까요?" },
 
-  { title: "계절에 따라 바람 띠가 움직여요", view: "globe",
-    layers: { cells:false, belts:true, winds:true, coriolis:true, precip:true, grid:true },
-    focus: null, seasonSpot: true,
-    body: "태양의 위치가 계절에 따라 달라지면, 기압대와 바람대도 <b>남북으로 이동</b>합니다. 7월에는 북반구 쪽으로, 1월에는 남반구 쪽으로 이동하는 모습을 볼 수 있습니다. 이 이동은 계절풍, 사바나 기후, 지중해성 기후를 이해하는 데 중요한 단서가 됩니다.",
-    q: "기압대가 계절에 따라 움직이면, 어떤 지역은 왜 우기와 건기가 뚜렷해질까요?" }
+  { title: "결론 — 대기대순환과 위도별 기후", view: "globe",
+    layers: { insol:false, cells:true, belts:true, winds:true, coriolis:true, precip:true, grid:false },
+    focus: null, pressure: true,
+    body: "위도에 따른 <b>일사량의 차이</b>가 적도와 극지방의 <b>열적 불균형</b>을 만들고, 이를 해소하는 과정에서 <b>대기대순환</b>이 나타납니다. 이 시스템 아래에서 위도대·지역별로 기압, 강수, 바람 같은 기후 요소에 차이가 생기고, 지구에는 <b>위도대별로 다양한 기후</b>가 나타납니다. 색깔 띠를 클릭해 위도대별 기후를 확인해 보세요.",
+    q: "대기대순환을 알면 세계의 기후 분포를 어떻게 설명할 수 있을까요?" }
 ];
 
 /* ============================================================
@@ -175,10 +176,11 @@ const SHIFT_MAX = 10;       // 계절 이동 최대(도)
 /* 상태 */
 const state = {
   view: "globe",
-  season: 0,                // -1(1월) .. 0 .. +1(7월)
-  layers: { cells:false, belts:true, winds:true, coriolis:true, precip:false, grid:false },
+  season: 0,                // -1(1월) .. 0 .. +1(7월) — 계절 이동은 8단계에서 활용 예정(현재 UI 숨김)
+  layers: { insol:false, cells:false, belts:true, winds:true, coriolis:true, precip:false, grid:false },
   stepIndex: -1,
-  focus: null
+  focus: null,
+  showPressure: true        // 지구본 기압대의 저기압 L / 고기압 H 라벨 (4단계부터)
 };
 function seasonShift() { return state.season * SHIFT_MAX; }
 function clampLat(v) { return Math.max(-89, Math.min(89, v)); }
@@ -306,7 +308,7 @@ function arrowGeom(points, tubeR, headR, headL) {
 /* 닫힌 순환 고리(튜브 + 진행 방향 화살촉들) → geometry */
 function loopGeom(points, tubeR, headR, headL, arrowTs) {
   const curve = new THREE.CatmullRomCurve3(points, true, "catmullrom", 0.15);
-  const parts = [new THREE.TubeGeometry(curve, 170, tubeR, 6, true)];
+  const parts = [new THREE.TubeGeometry(curve, 88, tubeR, 6, true)];
   arrowTs.forEach(t => {
     const p = curve.getPointAt(t);
     const tan = curve.getTangentAt(t);
@@ -361,6 +363,12 @@ const FOCUSABLES = [];   // { tag, mat, base }
 function regFocus(tag, mat) {
   mat.transparent = true;
   FOCUSABLES.push({ tag: tag, mat: mat, base: mat.opacity });
+}
+/* 재생성되는 라벨 재질의 포커스 등록 해제(중복 등록 방지) */
+function unregFocusMats(mats) {
+  for (let i = FOCUSABLES.length - 1; i >= 0; i--) {
+    if (mats.indexOf(FOCUSABLES[i].mat) >= 0) FOCUSABLES.splice(i, 1);
+  }
 }
 function applyFocus() {
   const f = state.focus;
@@ -496,6 +504,11 @@ const MAT = {};
   regFocus("dry", MAT.dryIcon);
 
   MAT.flowDot = new THREE.SpriteMaterial({ map: dotTex(), transparent: true, opacity: 0.9, depthTest: true, depthWrite: false });
+
+  // 1단계 — 일사(햇빛과 기온) 시각화용
+  MAT.sunRay    = new THREE.MeshBasicMaterial({ color: 0xf5a623, transparent: true, opacity: 0.95 });
+  MAT.patchHot  = new THREE.MeshBasicMaterial({ color: COL.heat, transparent: true, opacity: 0.42, depthWrite: false });
+  MAT.patchCold = new THREE.MeshBasicMaterial({ color: COL.cold, transparent: true, opacity: 0.42, depthWrite: false });
 })();
 
 /* 단면용 기압대 세로 기둥(은은한 그라데이션) 재질 */
@@ -591,7 +604,7 @@ const LAND_INNER = [
 ];
 
 function buildFallbackEarthTexture() {
-  const W = 2048, H = 1024;
+  const W = 1024, H = 512;
   const X = lon => (lon + 180) / 360 * W;
   const Y = lat => (90 - lat) / 180 * H;
 
@@ -607,7 +620,6 @@ function buildFallbackEarthTexture() {
     const x = c.getContext("2d");
     x.fillStyle = "#5b8a52";
     polyLists.forEach(list => list.forEach(p => { drawPoly(x, p); x.fill(); }));
-    // 위도별 자연색(툰드라~숲~사막~숲~빙설)
     x.globalCompositeOperation = "source-atop";
     const g = x.createLinearGradient(0, 0, 0, H);
     [[90,"#eef3f6"],[78,"#e5ebe7"],[70,"#93a48b"],[62,"#557a50"],[50,"#5d8a51"],[38,"#7d9c58"],
@@ -623,47 +635,61 @@ function buildFallbackEarthTexture() {
   cv.width = W; cv.height = H;
   const ctx = cv.getContext("2d");
 
-  // 바다
   const og = ctx.createLinearGradient(0, 0, 0, H);
   [[90,"#c9dcec"],[80,"#7fa8cf"],[68,"#3d6fa9"],[40,"#3e78b4"],[0,"#4c8bc2"],
    [-40,"#3e78b4"],[-64,"#3d6fa9"],[-78,"#9fc0da"],[-90,"#d7e5ef"]]
     .forEach(s => og.addColorStop((90 - s[0]) / 180, s[1]));
   ctx.fillStyle = og; ctx.fillRect(0, 0, W, H);
 
-  // 육지(대륙 + 바깥 섬)
   ctx.drawImage(paintLandCanvas([LAND_MAIN, LAND_ISLANDS]), 0, 0);
-
-  // 내해(지중해·흑해·카스피·발트·홍해·페르시아만)
   ctx.fillStyle = "#4a83b9";
   SEAS.forEach(p => { drawPoly(ctx, p); ctx.fill(); });
-
-  // 내해 안의 육지(이탈리아·그리스 등)
   ctx.drawImage(paintLandCanvas([LAND_INNER]), 0, 0);
-
-  // 해안선(은은하게)
-  ctx.strokeStyle = "rgba(28,58,92,0.30)";
-  ctx.lineWidth = 2; ctx.lineJoin = "round";
-  [LAND_MAIN, LAND_ISLANDS, LAND_INNER].forEach(list =>
-    list.forEach(p => { drawPoly(ctx, p); ctx.stroke(); }));
 
   const tex = setSRGB(new THREE.CanvasTexture(cv));
   tex.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy ? renderer.capabilities.getMaxAnisotropy() : 1);
   return tex;
 }
 
-/* ============================================================
-   7. 지구 전체 보기(지구본) 구성
-   ============================================================ */
-const globe = {};
-buildGlobeBase();
+/* 즉시 표시용 저해상도 지구 텍스처 — 상세 fallback은 유휴 시간에 교체 */
+let quickEarthTex = null;
+function getQuickEarthTexture() {
+  if (quickEarthTex) return quickEarthTex;
+  const cv = document.createElement("canvas");
+  cv.width = 512; cv.height = 256;
+  const ctx = cv.getContext("2d");
+  const og = ctx.createLinearGradient(0, 0, 0, 256);
+  [[90,"#c9dcec"],[68,"#3d6fa9"],[0,"#4c8bc2"],[-68,"#3d6fa9"],[-90,"#d7e5ef"]]
+    .forEach(s => og.addColorStop((90 - s[0]) / 180, s[1]));
+  ctx.fillStyle = og; ctx.fillRect(0, 0, 512, 256);
+  const lg = ctx.createLinearGradient(0, 0, 0, 256);
+  [[90,"#e8eef2"],[50,"#6a9e5a"],[30,"#c4a96a"],[0,"#3f8041"],[-50,"#6a9e5a"],[-90,"#e8eef2"]]
+    .forEach(s => lg.addColorStop((90 - s[0]) / 180, s[1]));
+  ctx.globalAlpha = 0.55;
+  ctx.fillStyle = lg; ctx.fillRect(0, 0, 512, 256);
+  quickEarthTex = setSRGB(new THREE.CanvasTexture(cv));
+  quickEarthTex.userData = { quick: true };
+  return quickEarthTex;
+}
 
-function buildGlobeBase() {
-  // 본체 — 우선 fallback 텍스처로 즉시 표시
-  globe.mat = new THREE.MeshLambertMaterial({ map: buildFallbackEarthTexture() });
-  const sphere = new THREE.Mesh(new THREE.SphereGeometry(R, 72, 48), globe.mat);
-  globeGroup.add(sphere);
+function runWhenIdle(fn) {
+  if (window.requestIdleCallback) window.requestIdleCallback(fn, { timeout: 1400 });
+  else setTimeout(fn, 60);
+}
 
-  // 인터넷이 되면 자연색 텍스처로 교체(실패해도 조용히 fallback 유지)
+let detailedEarthQueued = false;
+function queueDetailedEarth() {
+  if (detailedEarthQueued) return;
+  detailedEarthQueued = true;
+  const tex = buildFallbackEarthTexture();
+  if (globe.mat && globe.mat.map && globe.mat.map.userData && globe.mat.map.userData.quick) {
+    globe.mat.map.dispose();
+    globe.mat.map = tex;
+    globe.mat.needsUpdate = true;
+  }
+}
+
+function startRemoteEarthLoad() {
   (function tryLoad(i) {
     if (i >= EARTH_URLS.length) return;
     try {
@@ -672,13 +698,35 @@ function buildGlobeBase() {
       loader.load(EARTH_URLS[i], function (tex) {
         setSRGB(tex);
         tex.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy ? renderer.capabilities.getMaxAnisotropy() : 1);
-        globe.mat.map = tex;
-        globe.mat.needsUpdate = true;
+        if (globe.mat) {
+          if (globe.mat.map) globe.mat.map.dispose();
+          globe.mat.map = tex;
+          globe.mat.needsUpdate = true;
+        }
       }, undefined, function () { tryLoad(i + 1); });
     } catch (e) { /* 오프라인 등 — fallback 유지 */ }
   })(0);
+}
 
-  // 은은한 대기 글로우(카메라를 향하는 후광)
+/* ============================================================
+   7. 지구 전체 보기(지구본) 구성
+   ============================================================ */
+const globe = {};
+let globeShellReady = false;
+let globeLayersReady = false;
+let insolReady = false;
+let windsStrReady = false;
+
+function needsGlobeLayers(L) {
+  return L.belts || L.cells || L.winds || L.precip || L.grid;
+}
+
+function buildGlobeShell() {
+  if (globeShellReady) return;
+  globe.mat = new THREE.MeshLambertMaterial({ map: getQuickEarthTexture() });
+  globeGroup.add(new THREE.Mesh(new THREE.SphereGeometry(R, 48, 32), globe.mat));
+  startRemoteEarthLoad();
+
   const gcv = document.createElement("canvas");
   gcv.width = 256; gcv.height = 256;
   const gctx = gcv.getContext("2d");
@@ -688,30 +736,54 @@ function buildGlobeBase() {
   gg.addColorStop(0.82, "rgba(140,185,240,0.10)");
   gg.addColorStop(1, "rgba(150,190,240,0)");
   gctx.fillStyle = gg; gctx.fillRect(0, 0, 256, 256);
-  const glowMat = new THREE.SpriteMaterial({ map: setSRGB(new THREE.CanvasTexture(gcv)), transparent: true, depthTest: false, depthWrite: false });
-  const glow = new THREE.Sprite(glowMat);
+  const glow = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: setSRGB(new THREE.CanvasTexture(gcv)), transparent: true, depthTest: false, depthWrite: false
+  }));
   glow.scale.set(R * 3.05, R * 3.05, 1);
   glow.renderOrder = -1;
   globeGroup.add(glow);
 
-  // 위도·경도선(레이어) — 은은하게, 0°·30°·60°는 라벨과 함께
   globe.grid = new THREE.Group(); globeGroup.add(globe.grid);
-  buildGraticule();
-
-  // 동적 그룹
-  globe.belts   = new THREE.Group(); globeGroup.add(globe.belts);
-  globe.precip  = new THREE.Group(); globeGroup.add(globe.precip);
-  globe.cells   = new THREE.Group(); globeGroup.add(globe.cells);
-  globe.windsCor = new THREE.Group(); globeGroup.add(globe.windsCor);      // 휘어진 바람
-  globe.windsStr = new THREE.Group(); globeGroup.add(globe.windsStr);      // 곧게 부는 바람
+  globe.belts = new THREE.Group(); globeGroup.add(globe.belts);
+  globe.beltLH = new THREE.Group(); globeGroup.add(globe.beltLH);
+  globe.precip = new THREE.Group(); globeGroup.add(globe.precip);
+  globe.cells = new THREE.Group(); globeGroup.add(globe.cells);
+  globe.windsCor = new THREE.Group(); globeGroup.add(globe.windsCor);
+  globe.windsStr = new THREE.Group(); globeGroup.add(globe.windsStr);
+  globe.insol = new THREE.Group(); globeGroup.add(globe.insol);
   globe.pickers = new THREE.Group(); globeGroup.add(globe.pickers);
-  globe.corDots = []; globe.strDots = [];
+  globe.corDots = []; globe.strDots = []; globe.insolDots = []; globe.lhMats = [];
+  globeShellReady = true;
+}
 
+function buildGlobeLayers() {
+  if (globeLayersReady) return;
+  buildGraticule();
   buildGlobeBelts();
   buildGlobePrecip();
   buildGlobeCells();
   buildGlobeWinds();
   buildGlobePickers();
+  globeLayersReady = true;
+}
+
+function ensureGlobeLayers() {
+  if (!globeShellReady) buildGlobeShell();
+  if (!globeLayersReady) buildGlobeLayers();
+}
+
+function ensureGlobeInsol() {
+  if (!globeShellReady) buildGlobeShell();
+  if (insolReady) return;
+  buildGlobeInsol();
+  insolReady = true;
+}
+
+function ensureGlobeWindsStr() {
+  if (!globeLayersReady) ensureGlobeLayers();
+  if (windsStrReady) return;
+  windArrowSet(globe.windsStr, globe.strDots, false);
+  windsStrReady = true;
 }
 
 function buildGraticule() {
@@ -719,7 +791,7 @@ function buildGraticule() {
   const matKey = new THREE.LineBasicMaterial({ color: 0x2b6fe3, transparent: true, opacity: 0.42 });
   function parallel(lat, m) {
     const pts = [];
-    for (let i = 0; i <= 96; i++) pts.push(latLonToVec(lat, i / 96 * 360, R * 1.004));
+    for (let i = 0; i <= 48; i++) pts.push(latLonToVec(lat, i / 48 * 360, R * 1.004));
     globe.grid.add(new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), m));
   }
   [-60, -30, 30, 60].forEach(l => parallel(l, mat));
@@ -741,13 +813,16 @@ function buildGraticule() {
 /* 오르내리는 공기 띠(기압대) — 위도 밴드 + 오름/내림 무늬 */
 function beltBand(latLo, latHi, mat) {
   const phi0 = (90 - latHi) * DEG, phi1 = (90 - latLo) * DEG;
-  const geo = new THREE.SphereGeometry(R * 1.013, 96, 5, 0, Math.PI * 2, Math.min(phi0, phi1), Math.abs(phi1 - phi0));
+  const geo = new THREE.SphereGeometry(R * 1.013, 48, 4, 0, Math.PI * 2, Math.min(phi0, phi1), Math.abs(phi1 - phi0));
   const m = new THREE.Mesh(geo, mat);
   m.renderOrder = 2;
   return m;
 }
 function buildGlobeBelts() {
   disposeGroup(globe.belts);
+  disposeGroup(globe.beltLH);
+  if (globe.lhMats && globe.lhMats.length) unregFocusMats(globe.lhMats);
+  globe.lhMats = [];
   const sh = seasonShift();
   const defs = [
     [clampLat(-6 + sh),  clampLat(6 + sh),   MAT.beltEq],
@@ -761,6 +836,30 @@ function buildGlobeBelts() {
   const nCap = clampLat(78 + sh), sCap = clampLat(-78 + sh);
   if (nCap < 88) globe.belts.add(beltBand(nCap, 89.7, MAT.beltPole));
   if (sCap > -88) globe.belts.add(beltBand(-89.7, sCap, MAT.beltPole));
+
+  // 저기압 L / 고기압 H 라벨 (4단계부터 표시 — state.showPressure)
+  const lhDefs = [
+    { lat: 0,   txt: "저기압 L", color: COL.heat,  tag: "belt0"  },
+    { lat: 30,  txt: "고기압 H", color: COL.arid,  tag: "belt30" },
+    { lat: -30, txt: "고기압 H", color: COL.arid,  tag: "belt30" },
+    { lat: 60,  txt: "저기압 L", color: COL.front, tag: "belt60" },
+    { lat: -60, txt: "저기압 L", color: COL.front, tag: "belt60" },
+    { lat: 76,  txt: "고기압 H", color: COL.cold,  tag: "belt90" },
+    { lat: -76, txt: "고기압 H", color: COL.cold,  tag: "belt90" }
+  ];
+  lhDefs.forEach(d => {
+    const lat = clampLat(d.lat + sh);
+    [80, 260].forEach(lon => {
+      const l = makeLabel(d.txt, {
+        fontSize: 40, color: d.color, bg: "rgba(255,255,255,0.93)",
+        border: d.color + "66", worldHeight: 0.115, pad: 14
+      });
+      l.position.copy(latLonToVec(lat, lon, R * 1.10));
+      globe.beltLH.add(l);
+      globe.lhMats.push(l.material);
+      regFocus(d.tag, l.material);
+    });
+  });
 }
 
 /* 비 많은 곳 / 건조한 곳 — 아이콘 스프라이트 */
@@ -854,9 +953,96 @@ function windArrowSet(group, dots, curved) {
 }
 function buildGlobeWinds() {
   disposeGroup(globe.windsCor); globe.corDots = [];
-  disposeGroup(globe.windsStr); globe.strDots = [];
   windArrowSet(globe.windsCor, globe.corDots, true);
-  windArrowSet(globe.windsStr, globe.strDots, false);
+  if (windsStrReady) {
+    disposeGroup(globe.windsStr); globe.strDots = [];
+    windArrowSet(globe.windsStr, globe.strDots, false);
+  } else {
+    disposeGroup(globe.windsStr); globe.strDots = [];
+  }
+}
+
+/* 햇빛과 기온(일사) — 태양·평행 광선·입사 면적으로 열적 불균형 표현 (1단계)
+   광선은 지구본에 붙어 함께 회전하며, 이 레이어가 켜진 동안 자동 회전은 멈춤 */
+const INSOL_LON = 10;   // 초기 카메라 각도에서 화면 오른쪽 앞면에 오는 경도
+function buildGlobeInsol() {
+  disposeGroup(globe.insol);
+  globe.insolDots = [];
+  const n = latLonToVec(0, INSOL_LON, 1);   // 태양 방향 단위 벡터
+
+  // 태양
+  const cv = document.createElement("canvas");
+  cv.width = 160; cv.height = 160;
+  const ctx = cv.getContext("2d");
+  ctx.fillStyle = "#ffcf4d"; ctx.strokeStyle = "#eba81f"; ctx.lineWidth = 6;
+  ctx.beginPath(); ctx.arc(80, 80, 34, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+  ctx.strokeStyle = "#ffcf4d"; ctx.lineWidth = 10; ctx.lineCap = "round";
+  for (let i = 0; i < 10; i++) {
+    const a = i / 10 * Math.PI * 2;
+    ctx.beginPath();
+    ctx.moveTo(80 + Math.cos(a) * 46, 80 + Math.sin(a) * 46);
+    ctx.lineTo(80 + Math.cos(a) * 64, 80 + Math.sin(a) * 64);
+    ctx.stroke();
+  }
+  const sunMat = new THREE.SpriteMaterial({ map: setSRGB(new THREE.CanvasTexture(cv)), transparent: true, depthWrite: false });
+  sunMat.userData.own = true;
+  const sun = new THREE.Sprite(sunMat);
+  sun.scale.set(0.5, 0.5, 1);
+  sun.position.copy(n).multiplyScalar(R * 1.92);
+  globe.insol.add(sun);
+
+  const sunLab = makeLabel("태양 빛", {
+    sub: "지구에 거의 평행하게 도달", fontSize: 32, color: "#9a6b09",
+    bg: "rgba(255,248,222,0.95)", border: "rgba(214,164,50,0.6)", worldHeight: 0.14, pad: 13
+  });
+  sunLab.position.copy(n).multiplyScalar(R * 1.92);
+  sunLab.position.y -= 0.44;
+  globe.insol.add(sunLab);
+
+  // 평행 광선 — 적도는 수직 입사, 고위도는 비스듬히 입사
+  [0, 45, -45, 75, -75].forEach(lat => {
+    const end = latLonToVec(lat, INSOL_LON, R * 1.02);
+    const start = end.clone().addScaledVector(n, 1.12);
+    const mid = end.clone().addScaledVector(n, 0.56);
+    const ar = arrowGeom([start, mid, end], 0.018, 0.05, 0.12);
+    globe.insol.add(new THREE.Mesh(ar.geom, MAT.sunRay));
+    for (let k = 0; k < 2; k++) {
+      const sp = new THREE.Sprite(MAT.flowDot);
+      sp.scale.set(0.06, 0.06, 1);
+      globe.insol.add(sp);
+      globe.insolDots.push({ curve: ar.curve, t: k / 2, sprite: sp });
+    }
+  });
+
+  // 입사 면적 — 적도(좁은 면적·고온) vs 극(넓은 면적·저온)
+  function patch(latLo, latHi, lonLo, lonHi, mat) {
+    const t0 = (90 - latHi) * DEG, t1 = (90 - latLo) * DEG;
+    const geo = new THREE.SphereGeometry(R * 1.012, 24, 8,
+      Math.PI - lonHi * DEG, (lonHi - lonLo) * DEG,
+      Math.min(t0, t1), Math.abs(t1 - t0));
+    const m = new THREE.Mesh(geo, mat);
+    m.renderOrder = 2;
+    globe.insol.add(m);
+  }
+  patch(-8, 8, INSOL_LON - 9, INSOL_LON + 9, MAT.patchHot);
+  patch(58, 84, INSOL_LON - 26, INSOL_LON + 26, MAT.patchCold);
+  patch(-84, -58, INSOL_LON - 26, INSOL_LON + 26, MAT.patchCold);
+
+  const eqLab = makeLabel("좁은 면적에 집중", {
+    sub: "기온 높음", fontSize: 34, color: COL.heat,
+    bg: "rgba(255,255,255,0.95)", border: COL.heat + "88", worldHeight: 0.155, pad: 14
+  });
+  eqLab.position.copy(latLonToVec(0, INSOL_LON, R * 1.20));
+  globe.insol.add(eqLab);
+
+  [1, -1].forEach(hemi => {
+    const l = makeLabel("넓은 면적으로 분산", {
+      sub: "기온 낮음", fontSize: 34, color: COL.cold,
+      bg: "rgba(255,255,255,0.95)", border: COL.cold + "88", worldHeight: 0.155, pad: 14
+    });
+    l.position.copy(latLonToVec(60 * hemi, INSOL_LON - 38, R * 1.30));
+    globe.insol.add(l);
+  });
 }
 
 /* 클릭 픽킹용 투명 밴드 */
@@ -892,7 +1078,15 @@ const TOP_Y = 1.0;
 function latToX(lat) { return (lat / 90) * XW; }
 
 const cross = {};
-buildCrossBase();
+let crossReady = false;
+
+function ensureCrossBuilt() {
+  if (crossReady) return;
+  buildCrossBase();
+  crossReady = true;
+  applyVisibility();
+  applyFocus();
+}
 
 function buildCrossBase() {
   cross.static  = new THREE.Group(); crossGroup.add(cross.static);
@@ -1158,7 +1352,7 @@ function updateCrossSun() {
   const x = latToX(state.season * 23.5);
   cross.sun.position.set(x, TOP_Y + 0.30, 0.1);
   cross.sunLabel.position.set(x, TOP_Y + 0.30 - 0.22, 0.12);
-  cross.sunLabel.visible = Math.abs(state.season) > 0.02 || state.stepIndex === 6;
+  cross.sunLabel.visible = Math.abs(state.season) > 0.02;
 }
 
 /* 단면 클릭 픽킹용 투명 기둥 */
@@ -1189,21 +1383,29 @@ function buildCrossPickers() {
    ============================================================ */
 function applyVisibility() {
   const L = state.layers, isGlobe = state.view === "globe";
+  if (!isGlobe) ensureCrossBuilt();
+  if (L.insol) ensureGlobeInsol();
+  if (L.winds && !L.coriolis) ensureGlobeWindsStr();
+
   globeGroup.visible = isGlobe;
-  crossGroup.visible = !isGlobe;
+  crossGroup.visible = !isGlobe && crossReady;
 
-  globe.belts.visible  = L.belts;
-  globe.precip.visible = L.precip;
-  globe.cells.visible  = L.cells;
-  globe.grid.visible   = L.grid;
-  globe.windsCor.visible = L.winds && L.coriolis;
-  globe.windsStr.visible = L.winds && !L.coriolis;
+  globe.belts.visible  = globeLayersReady && L.belts;
+  globe.beltLH.visible = globeLayersReady && L.belts && state.showPressure;
+  globe.precip.visible = globeLayersReady && L.precip;
+  globe.cells.visible  = globeLayersReady && L.cells;
+  globe.grid.visible   = globeLayersReady && L.grid;
+  globe.insol.visible  = insolReady && L.insol;
+  globe.windsCor.visible = globeLayersReady && L.winds && L.coriolis;
+  globe.windsStr.visible = windsStrReady && L.winds && !L.coriolis;
 
-  cross.belts.visible  = L.belts;
-  cross.precip.visible = L.precip;
-  cross.cells.visible  = L.cells;
-  cross.winds.visible  = L.winds;
-  cross.grid.visible   = L.grid;
+  if (crossReady) {
+    cross.belts.visible  = L.belts;
+    cross.precip.visible = L.precip;
+    cross.cells.visible  = L.cells;
+    cross.winds.visible  = L.winds;
+    cross.grid.visible   = L.grid;
+  }
 
   document.getElementById("controls-hint").textContent = isGlobe
     ? "드래그: 돌리기 · 휠/두 손가락: 확대·축소 · 색깔 띠 클릭: 설명 카드"
@@ -1212,9 +1414,13 @@ function applyVisibility() {
 
 /* 계절 변경 → 위치 의존 요소 재생성(프레임당 1회로 제한) */
 function rebuildSeasonDependent() {
-  buildGlobeBelts(); buildGlobePrecip(); buildGlobeCells(); buildGlobeWinds(); buildGlobePickers();
-  buildCrossBelts(); buildCrossCells(); buildCrossWinds(); buildCrossPrecip(); buildCrossPickers();
-  updateCrossSun();
+  if (globeLayersReady) {
+    buildGlobeBelts(); buildGlobePrecip(); buildGlobeCells(); buildGlobeWinds(); buildGlobePickers();
+  }
+  if (crossReady) {
+    buildCrossBelts(); buildCrossCells(); buildCrossWinds(); buildCrossPrecip(); buildCrossPickers();
+    updateCrossSun();
+  }
   applyVisibility();
 }
 let seasonPending = false;
@@ -1345,6 +1551,7 @@ document.getElementById("card-close").addEventListener("click", hideCard);
    12. UI — 표시할 내용(레이어), 보기 전환, 사이드바, 계절, 이해 순서
    ============================================================ */
 const LAYER_DEFS = [
+  { id: "insol",    name: "햇빛과 기온",           sub: "위도별 일사 — 열적 불균형", color: "#f6a821" },
   { id: "cells",    name: "공기의 큰 순환",        sub: "해들리·페렐·극 순환",       color: COL.cellH },
   { id: "belts",    name: "오르내리는 공기 띠",    sub: "기압대",                    color: COL.arid },
   { id: "winds",    name: "땅 가까이 부는 바람",   sub: "무역풍·편서풍·극동풍",      color: COL.windTrade },
@@ -1368,6 +1575,7 @@ function buildLayerList() {
       '<span class="switch"></span>';
     const toggle = function () {
       state.layers[d.id] = !state.layers[d.id];
+      if (needsGlobeLayers(state.layers)) ensureGlobeLayers();
       row.setAttribute("aria-checked", String(state.layers[d.id]));
       applyVisibility();
     };
@@ -1386,6 +1594,7 @@ function refreshLayerList() {
 /* --- 보기 전환 --- */
 function setView(v) {
   state.view = v;
+  if (v === "cross") ensureCrossBuilt();
   document.getElementById("view-globe").setAttribute("aria-pressed", String(v === "globe"));
   document.getElementById("view-cross").setAttribute("aria-pressed", String(v === "cross"));
   refitCamera(true);
@@ -1434,7 +1643,11 @@ function applyStep(i) {
   const s = STEPS[i];
   Object.keys(s.layers).forEach(function (k) { state.layers[k] = s.layers[k]; });
   state.focus = s.focus || null;
+  state.showPressure = !!s.pressure;
+  if (needsGlobeLayers(s.layers)) ensureGlobeLayers();
   if (s.view !== state.view) setView(s.view);
+  // 1단계(일사)는 태양·광선이 잘 보이는 각도로 지구본 정렬
+  if (s.layers.insol) { rot.x = 0.3; rot.y = -0.55; }
   refreshLayerList();
   applyVisibility();
   applyFocus();
@@ -1486,8 +1699,15 @@ function loop(now) {
   globeGroup.rotation.y = rot.y;
 
   if (state.view === "globe") {
-    if (!userTouched && !REDUCED) rot.y += dt * 0.05;
-    if (state.layers.winds && !REDUCED) {
+    if (!userTouched && !REDUCED && !state.layers.insol) rot.y += dt * 0.05;
+    if (state.layers.insol && insolReady && !REDUCED) {
+      for (let i = 0; i < globe.insolDots.length; i++) {
+        const d = globe.insolDots[i];
+        d.t = (d.t + dt * 0.3) % 1;
+        d.sprite.position.copy(d.curve.getPointAt(d.t));
+      }
+    }
+    if (state.layers.winds && globeLayersReady && !REDUCED) {
       const dots = state.layers.coriolis ? globe.corDots : globe.strDots;
       for (let i = 0; i < dots.length; i++) {
         const d = dots[i];
@@ -1515,6 +1735,7 @@ function loop(now) {
    14. 시작
    ============================================================ */
 function init() {
+  buildGlobeShell();
   buildLayerList();
   buildStepList();
   setView("globe");
@@ -1523,7 +1744,17 @@ function init() {
   applyVisibility();
   applyFocus();
   requestAnimationFrame(loop);
-  setTimeout(function () { loadingEl.classList.add("hide"); }, 380);
+  requestAnimationFrame(function () {
+    renderer.render(scene, camera);
+    loadingEl.classList.add("hide");
+    requestAnimationFrame(function () {
+      buildGlobeLayers();
+      applyVisibility();
+      applyFocus();
+    });
+    runWhenIdle(queueDetailedEarth);
+    runWhenIdle(function () { if (!crossReady) ensureCrossBuilt(); });
+  });
 }
 try {
   init();
