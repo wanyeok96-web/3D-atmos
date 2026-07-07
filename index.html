@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>대기대순환 3D — 지구의 바람 흐름이 비와 기후를 만드는 과정</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ====================== 상단바 ====================== -->
+<header class="topbar">
+  <div class="brand">
+    <span class="glyph">🌍</span>
+    <div>
+      <h1>대기대순환 3D</h1>
+      <div class="sub">지구의 바람 흐름이 비와 기후를 만드는 과정</div>
+    </div>
+  </div>
+
+  <div class="seg view" role="group" aria-label="보기 전환">
+    <span class="seg-label">보기</span>
+    <button id="view-globe" aria-pressed="true">
+      <span class="full">지구 전체 보기</span><span class="short">지구 전체</span>
+    </button>
+    <button id="view-cross" aria-pressed="false">
+      <span class="full">공기 흐름 단면 보기</span><span class="short">공기 단면</span>
+    </button>
+  </div>
+</header>
+
+<!-- ====================== 레이아웃 ====================== -->
+<div class="layout">
+
+  <!-- 사이드바를 열기 위한 손잡이 (닫혔을 때 노출) -->
+  <button class="sidebar-handle" id="sidebar-handle" aria-label="조작 패널 열기" title="조작 패널 열기">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/>
+    </svg>
+  </button>
+
+  <!-- 좌측 통합 패널 -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-head">
+      <h2 id="sidebar-title">조작 패널</h2>
+      <button class="close" id="sidebar-close" aria-label="패널 닫기" title="패널 닫기">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="15" y1="6" x2="6" y2="15"/><line x1="6" y1="6" x2="15" y2="15"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="sidebar-body">
+
+      <!-- 1) 이해 순서 -->
+      <div class="section">
+        <div class="label">이해 순서</div>
+        <ol class="step-list" id="step-list"></ol>
+
+        <div class="step-box" id="step-box">
+          <div class="step-count" id="step-count">시작하기</div>
+          <div class="step-title" id="step-title">1단계부터 차례로 눌러 보세요</div>
+          <div class="step-body" id="step-body">
+            위 목록에서 단계를 누르면 그 단계에 맞는 화면과 표시 내용이 자동으로 설정됩니다.
+            <b>다음 →</b> 버튼으로 순서대로 진행할 수도 있어요.
+          </div>
+          <div class="step-q" id="step-q" hidden>
+            <span class="q-mark">💭</span><span id="step-q-text"></span>
+          </div>
+          <div class="nav">
+            <button id="step-prev">← 이전</button>
+            <button id="step-next">다음 →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2) 표시할 내용 -->
+      <div class="section">
+        <div class="label">표시할 내용</div>
+        <div id="layer-list"></div>
+      </div>
+
+      <!-- 3) 계절에 따른 이동 -->
+      <div class="section" id="season-section">
+        <div class="label">계절에 따른 이동</div>
+        <div class="season">
+          <div class="track-labels"><b>1월</b><span>춘·추분</span><b>7월</b></div>
+          <input type="range" id="season" min="-1" max="1" step="0.01" value="0" aria-label="계절 슬라이더">
+          <div class="readout" id="season-readout">춘·추분 — 기압대가 적도를 기준으로 대칭</div>
+        </div>
+      </div>
+
+      <!-- 4) 읽는 법 -->
+      <div class="section">
+        <div class="label">읽는 법</div>
+        <div class="hint">
+          <ul>
+            <li>지구를 <b>드래그</b>해서 돌려 보세요.</li>
+            <li><b>색깔 띠를 클릭</b>하면 설명 카드가 나타납니다.</li>
+            <li><b>바람 휘어짐</b>을 켜고 끄며 바람 방향을 비교해 보세요.</li>
+            <li><b>계절 슬라이더</b>를 움직이며 기압대가 어떻게 이동하는지 살펴보세요.</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </aside>
+
+  <!-- 3D 무대 -->
+  <main class="stage">
+    <canvas id="scene" aria-label="대기대순환 3차원 시각화"></canvas>
+
+    <!-- 위도대 정보 카드 -->
+    <section class="card" id="card" aria-live="polite">
+      <div class="card-top">
+        <span class="dot" id="card-dot"></span>
+        <div class="card-titles">
+          <h3 id="card-title"></h3>
+          <span class="term" id="card-term"></span>
+        </div>
+        <span class="lat" id="card-lat"></span>
+        <button class="x" id="card-close" aria-label="카드 닫기">✕</button>
+      </div>
+      <div class="card-body">
+        <div class="row"><span class="k move">공기의 움직임</span><span class="v" id="card-move"></span></div>
+        <div class="row"><span class="k rain">비와 건조</span><span class="v" id="card-rain"></span></div>
+        <div class="row"><span class="k region">대표 기후·지역</span><span class="v" id="card-region"></span></div>
+        <div class="sum" id="card-sum"></div>
+      </div>
+    </section>
+
+    <div class="controls-hint" id="controls-hint">드래그: 돌리기 · 휠/두 손가락: 확대·축소</div>
+  </main>
+</div>
+
+<!-- 로딩 -->
+<div class="loading" id="loading">
+  <div class="spinner"></div>
+  <p>지구와 대기를 준비하는 중…</p>
+</div>
+
+<!-- three.js (로컬, 오프라인) + 앱 스크립트 -->
+<script src="libs/three.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
