@@ -39,8 +39,26 @@
     </svg>
   </button>
 
-  <!-- 좌측 통합 패널 -->
+  <!-- 좌측 통합 패널 (모바일에서는 하단 시트로 전환) -->
   <aside class="sidebar" id="sidebar">
+
+    <!-- 모바일 하단 시트 바: 위로 스와이프 = 패널 열기 · 좌우 스와이프/화살표 = 단계 이동 -->
+    <div class="sheet-bar" id="sheet-bar" aria-label="단계 이동 및 조작 패널 열기">
+      <div class="grip" aria-hidden="true"></div>
+      <div class="sheet-row">
+        <button class="sb-arrow" id="sheet-prev" aria-label="이전 단계">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div class="sb-info">
+          <span class="sb-step" id="sheet-step">시작하기</span>
+          <span class="sb-title" id="sheet-title">위로 쓸어올려 패널 열기 · 좌우로 단계 이동</span>
+        </div>
+        <button class="sb-arrow" id="sheet-next" aria-label="다음 단계">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+    </div>
+
     <div class="sidebar-head">
       <h2 id="sidebar-title">조작 패널</h2>
       <button class="close" id="sidebar-close" aria-label="패널 닫기" title="패널 닫기">
@@ -99,6 +117,7 @@
             <li><b>색깔 띠를 클릭</b>하면 설명 카드가 나타납니다.</li>
             <li><b>바람 휘어짐</b>을 켜고 끄며 바람 방향을 비교해 보세요.</li>
             <li><b>이해 순서</b>를 1단계부터 차례로 누르면 수업 흐름대로 화면이 바뀝니다.</li>
+            <li>휴대전화에서는 아래 바를 <b>위로 쓸어올려</b> 패널을 열고, <b>좌우로 쓸어</b> 단계를 넘길 수 있어요.</li>
           </ul>
         </div>
       </div>

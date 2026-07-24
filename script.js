@@ -80,11 +80,13 @@ const ZONES = {
   }
 };
 
-/* 순환(고리) — 상승 위도 / 하강 위도 */
+/* 순환(고리) — 상승 위도 / 하강 위도
+   + 위도별 층후: 공기층(대류권)은 저위도에서 두껍고 고위도로 갈수록 얇음
+     tubeG/tubeX = 지구본/단면 튜브 반지름, top = 순환 상층 높이 비율 */
 const CELLS = [
-  { id: "hadley", name: "해들리 순환", range: "0°~30°",  rise: 0,  sink: 30, color: COL.cellH },
-  { id: "ferrel", name: "페렐 순환",   range: "30°~60°", rise: 60, sink: 30, color: COL.cellF },
-  { id: "polar",  name: "극 순환",     range: "60°~90°", rise: 60, sink: 89, color: COL.cellP }
+  { id: "hadley", name: "해들리 순환", range: "0°~30°",  rise: 0,  sink: 30, color: COL.cellH, tubeG: 0.026, tubeX: 0.030, top: 1.00 },
+  { id: "ferrel", name: "페렐 순환",   range: "30°~60°", rise: 60, sink: 30, color: COL.cellF, tubeG: 0.017, tubeX: 0.020, top: 0.80 },
+  { id: "polar",  name: "극 순환",     range: "60°~90°", rise: 60, sink: 89, color: COL.cellP, tubeG: 0.011, tubeX: 0.013, top: 0.58 }
 ];
 
 /* 지상 바람대 (dLon>0 = 서쪽으로 휨: 무역풍·극동풍은 편동풍, 편서풍은 편서풍) */
@@ -165,6 +167,10 @@ scene.add(hemi);
 const key = new THREE.DirectionalLight(0xffffff, 1.7);
 key.position.set(4, 3, 6);
 scene.add(key);
+/* 반대편 은은한 푸른 역광 — 튜브·지구의 어두운 면이 죽지 않게 */
+const rimLight = new THREE.DirectionalLight(0xbcd6ff, 0.55);
+rimLight.position.set(-5, -2, -4);
+scene.add(rimLight);
 
 const ROOT = new THREE.Group();       scene.add(ROOT);
 const globeGroup = new THREE.Group(); ROOT.add(globeGroup);
@@ -299,7 +305,7 @@ function coneAt(point, dir, headR, headL, centered) {
 /* 열린 곡선 화살표(튜브 + 끝 화살촉) → geometry */
 function arrowGeom(points, tubeR, headR, headL) {
   const curve = new THREE.CatmullRomCurve3(points);
-  const tube = new THREE.TubeGeometry(curve, Math.max(10, points.length * 3), tubeR, 6, false);
+  const tube = new THREE.TubeGeometry(curve, Math.max(10, points.length * 3), tubeR, 8, false);
   const end = points[points.length - 1];
   const tan = curve.getTangent(1);
   return { geom: mergeGeoms([tube, coneAt(end, tan, headR, headL, false)]), curve: curve };
@@ -308,7 +314,7 @@ function arrowGeom(points, tubeR, headR, headL) {
 /* 닫힌 순환 고리(튜브 + 진행 방향 화살촉들) → geometry */
 function loopGeom(points, tubeR, headR, headL, arrowTs) {
   const curve = new THREE.CatmullRomCurve3(points, true, "catmullrom", 0.15);
-  const parts = [new THREE.TubeGeometry(curve, 88, tubeR, 6, true)];
+  const parts = [new THREE.TubeGeometry(curve, 88, tubeR, 10, true)];
   arrowTs.forEach(t => {
     const p = curve.getPointAt(t);
     const tan = curve.getTangentAt(t);
@@ -464,6 +470,125 @@ function dotTex() {
   return setSRGB(new THREE.CanvasTexture(cv));
 }
 
+/* 입체감용 재질 — 빛을 받아 튜브 표면에 음영과 하이라이트가 생김 */
+function volMat(hex, opacity) {
+  return new THREE.MeshPhongMaterial({
+    color: hex,
+    transparent: true,
+    opacity: opacity != null ? opacity : 0.97,
+    shininess: 60,
+    specular: 0x667788,
+    emissive: hex,
+    emissiveIntensity: 0.22
+  });
+}
+
+/* ------------------------------------------------------------
+   3D 태양 — 발광 구(표면 무늬) + 프레넬 코로나 + 부드러운 글로우
+   지구본 일사(1단계)와 단면 보기의 태양에 공용 사용
+   ------------------------------------------------------------ */
+function sunSurfaceTex() {
+  const cv = document.createElement("canvas");
+  cv.width = 256; cv.height = 128;
+  const ctx = cv.getContext("2d");
+  const g = ctx.createLinearGradient(0, 0, 0, 128);
+  g.addColorStop(0, "#ffdd66"); g.addColorStop(0.5, "#ffc837"); g.addColorStop(1, "#ffdd66");
+  ctx.fillStyle = g; ctx.fillRect(0, 0, 256, 128);
+  /* 쌀알 무늬(입상반) 느낌 — 밝고 어두운 반점을 흩뿌려 회전할 때 구가 살아 보임 */
+  for (let i = 0; i < 90; i++) {
+    const x = Math.random() * 256, y = Math.random() * 128, r = 4 + Math.random() * 14;
+    const gg = ctx.createRadialGradient(x, y, 0, x, y, r);
+    const warm = Math.random() < 0.5;
+    gg.addColorStop(0, warm ? "rgba(255,166,38,0.5)" : "rgba(255,242,190,0.55)");
+    gg.addColorStop(1, "rgba(255,200,80,0)");
+    ctx.fillStyle = gg;
+    [-256, 0, 256].forEach(off => { ctx.beginPath(); ctx.arc(x + off, y, r, 0, Math.PI * 2); ctx.fill(); });
+  }
+  return setSRGB(new THREE.CanvasTexture(cv));
+}
+function sunGlowTex() {
+  const cv = document.createElement("canvas");
+  cv.width = 128; cv.height = 128;
+  const ctx = cv.getContext("2d");
+  const g = ctx.createRadialGradient(64, 64, 6, 64, 64, 62);
+  g.addColorStop(0, "rgba(255,238,170,0.95)");
+  g.addColorStop(0.35, "rgba(255,210,110,0.55)");
+  g.addColorStop(0.7, "rgba(255,190,90,0.18)");
+  g.addColorStop(1, "rgba(255,190,90,0)");
+  ctx.fillStyle = g; ctx.fillRect(0, 0, 128, 128);
+  return setSRGB(new THREE.CanvasTexture(cv));
+}
+function makeSun3D(radius) {
+  const g = new THREE.Group();
+  /* 스스로 빛나는 천체 — 음영 없이 표면 무늬만 (Basic) */
+  const coreMat = new THREE.MeshBasicMaterial({ map: sunSurfaceTex() });
+  coreMat.userData.own = true;
+  const core = new THREE.Mesh(new THREE.SphereGeometry(radius, 32, 24), coreMat);
+  g.add(core);
+  /* 코로나 — 가장자리로 갈수록 진해지는 프레넬 발광 */
+  const coronaMat = new THREE.ShaderMaterial({
+    uniforms: { cTint: { value: new THREE.Color(0xffb52e) } },
+    vertexShader:
+      "varying float vF;" +
+      "void main(){" +
+      "  vec3 n = normalize(normalMatrix * normal);" +
+      "  vec4 mv = modelViewMatrix * vec4(position, 1.0);" +
+      "  vF = pow(1.0 - abs(dot(n, normalize(-mv.xyz))), 2.0);" +
+      "  gl_Position = projectionMatrix * mv;" +
+      "}",
+    fragmentShader:
+      "uniform vec3 cTint; varying float vF;" +
+      "void main(){ gl_FragColor = vec4(cTint, vF * 0.9); }",
+    transparent: true, depthWrite: false
+  });
+  coronaMat.userData.own = true;
+  g.add(new THREE.Mesh(new THREE.SphereGeometry(radius * 1.22, 32, 24), coronaMat));
+  /* 넓게 퍼지는 글로우(빌보드) */
+  const glowMat = new THREE.SpriteMaterial({ map: sunGlowTex(), transparent: true, opacity: 0.9, depthWrite: false });
+  glowMat.userData.own = true;
+  const glow = new THREE.Sprite(glowMat);
+  glow.scale.set(radius * 5.2, radius * 5.2, 1);
+  g.add(glow);
+  g.userData.core = core;
+  g.userData.glow = glow;
+  return g;
+}
+
+/* ------------------------------------------------------------
+   화면 오른쪽에 고정되는 큰 태양
+   - 지구본과 함께 회전하지 않도록 scene에 직접 붙임
+   - 지구보다 뒤(-z)에 두어, 겹치는 부분은 지구에 자연스럽게 가려짐
+   - 화면 비율·확대 정도가 바뀌어도 항상 오른쪽 가장자리에 절반쯤 걸치도록 매 프레임 재배치
+   ------------------------------------------------------------ */
+const SUN_BASE_R = 1;          // makeSun3D 기준 반지름(스케일로 조절)
+const SUN_Z = -2.2;            // 지구 뒤쪽 깊이
+const SUN_SIZE = 1.62;         // 지구 겉보기 크기의 배수 (1보다 크면 지구보다 크게 보임)
+const SUN_EDGE_MIN = 0.04;     // 가장 많이 보일 때(약 절반 노출)
+const SUN_EDGE_MAX = 0.72;     // 가장 적게 보일 때(세로 화면 — 가장자리에 걸침)
+let sunFixed = null;
+function ensureFixedSun() {
+  if (sunFixed) return;
+  sunFixed = makeSun3D(SUN_BASE_R);
+  sunFixed.visible = false;
+  scene.add(sunFixed);
+  positionFixedSun();
+}
+function positionFixedSun() {
+  if (!sunFixed) return;
+  const asp = Math.max(0.35, camera.aspect || 1);
+  const d = camZ - SUN_Z;
+  const halfW  = TANF * d * asp;                // 태양 깊이에서의 화면 절반 폭
+  const halfW0 = TANF * camZ * asp;             // 지구 깊이에서의 화면 절반 폭
+  const rad = R * SUN_SIZE * (d / camZ);        // 원근 보정 — 화면상 지구보다 크게
+  /* 노출량 자동 조절: 지구를 덮지 않는 선에서 최대한(최대 절반) 보이게.
+     가로로 넓은 화면은 절반쯤, 세로로 좁은 화면은 가장자리에 걸치는 정도로 자동 축소 */
+  const earthEdge = R / halfW0 + 0.05;
+  let edge = 1 - (1 - earthEdge) * halfW / rad;
+  edge = Math.max(SUN_EDGE_MIN, Math.min(SUN_EDGE_MAX, edge));
+  sunFixed.scale.setScalar(rad / SUN_BASE_R);
+  sunFixed.position.set(halfW + rad * edge, 0, SUN_Z);
+}
+
 const MAT = {};
 (function buildSharedMats() {
   const chevUp = chevronTex(true), chevDown = chevronTex(false);
@@ -478,21 +603,21 @@ const MAT = {};
   regFocus("belt90", MAT.beltPole);
 
   CELLS.forEach(c => {
-    const m = new THREE.MeshBasicMaterial({ color: c.color, transparent: true, opacity: 0.96 });
+    const m = volMat(c.color, 0.96);
     MAT["cell_" + c.id] = m;
     regFocus("cell-" + c.id, m);
   });
 
   WIND_BANDS.forEach(b => {
-    const m = new THREE.MeshBasicMaterial({ color: b.color, transparent: true, opacity: 0.98 });
+    const m = volMat(b.color, 0.98);
     MAT["wind_" + b.id] = m;
     regFocus("winds", m);
   });
 
-  MAT.rise0  = new THREE.MeshBasicMaterial({ color: COL.rise, transparent: true, opacity: 0.98 });
-  MAT.rise60 = new THREE.MeshBasicMaterial({ color: COL.rise, transparent: true, opacity: 0.98 });
-  MAT.sink30 = new THREE.MeshBasicMaterial({ color: COL.sink, transparent: true, opacity: 0.98 });
-  MAT.sink90 = new THREE.MeshBasicMaterial({ color: COL.sink, transparent: true, opacity: 0.98 });
+  MAT.rise0  = volMat(COL.rise, 0.98);
+  MAT.rise60 = volMat(COL.rise, 0.98);
+  MAT.sink30 = volMat(COL.sink, 0.98);
+  MAT.sink90 = volMat(COL.sink, 0.98);
   regFocus("rise0",  MAT.rise0);
   regFocus("rise60", MAT.rise60);
   regFocus("sink30", MAT.sink30);
@@ -506,7 +631,7 @@ const MAT = {};
   MAT.flowDot = new THREE.SpriteMaterial({ map: dotTex(), transparent: true, opacity: 0.9, depthTest: true, depthWrite: false });
 
   // 1단계 — 일사(햇빛과 기온) 시각화용
-  MAT.sunRay    = new THREE.MeshBasicMaterial({ color: 0xf5a623, transparent: true, opacity: 0.95 });
+  MAT.sunRay    = volMat(0xf5a623, 0.95);
   MAT.patchHot  = new THREE.MeshBasicMaterial({ color: COL.heat, transparent: true, opacity: 0.42, depthWrite: false });
   MAT.patchCold = new THREE.MeshBasicMaterial({ color: COL.cold, transparent: true, opacity: 0.42, depthWrite: false });
 })();
@@ -677,6 +802,70 @@ function runWhenIdle(fn) {
   else setTimeout(fn, 60);
 }
 
+/* ------------------------------------------------------------
+   구름층 — 절차 생성 텍스처 2겹(구름 + 표면 그림자)으로 깊이감
+   대기대순환의 실제 구름 분포를 반영: 적도·중위도·60°에 많고 30°는 적음
+   ------------------------------------------------------------ */
+function cloudTex() {
+  const W = 1024, H = 512;
+  const cv = document.createElement("canvas");
+  cv.width = W; cv.height = H;
+  const ctx = cv.getContext("2d");
+  function puff(x, y, r, a) {
+    const g = ctx.createRadialGradient(x, y, r * 0.12, x, y, r);
+    g.addColorStop(0, "rgba(255,255,255," + a.toFixed(3) + ")");
+    g.addColorStop(0.65, "rgba(255,255,255," + (a * 0.45).toFixed(3) + ")");
+    g.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+  }
+  function cluster(lat, spread, sx, aMax) {
+    const cx = Math.random() * W;
+    const cy = (90 - (lat + (Math.random() * 2 - 1) * spread)) / 180 * H;
+    const n = 4 + Math.floor(Math.random() * 5);
+    for (let i = 0; i < n; i++) {
+      const dx = (Math.random() * 2 - 1) * 46 * sx;
+      const dy = (Math.random() * 2 - 1) * 13;
+      const r = 10 + Math.random() * 22;
+      const a = aMax * (0.55 + Math.random() * 0.45);
+      /* 좌우 경계에서 이어지도록(심리스) 세 번 그림 */
+      [-W, 0, W].forEach(off => puff(cx + dx + off, cy + dy, r, a));
+    }
+  }
+  for (let i = 0; i < 26; i++) cluster(0, 9, 1.6, 0.9);     // 적도 수렴대 — 구름 많음
+  for (let i = 0; i < 15; i++) cluster(48, 12, 2.4, 0.85);  // 중위도 편서풍대 — 길게 흐르는 구름
+  for (let i = 0; i < 15; i++) cluster(-48, 12, 2.4, 0.85);
+  for (let i = 0; i < 7; i++)  cluster(66, 7, 1.8, 0.8);    // 한대 전선대
+  for (let i = 0; i < 7; i++)  cluster(-66, 7, 1.8, 0.8);
+  for (let i = 0; i < 3; i++)  cluster(30, 5, 1.1, 0.45);   // 아열대 고압대 — 구름 적음
+  for (let i = 0; i < 3; i++)  cluster(-30, 5, 1.1, 0.45);
+  return setSRGB(new THREE.CanvasTexture(cv));
+}
+function buildClouds() {
+  if (globe.clouds || !globeShellReady) return;
+  const tex = cloudTex();
+  /* 표면 그림자층 — 구름보다 살짝 안쪽·비껴난 각도로 배치해 높이감(패럴랙스)을 냄 */
+  const shadow = new THREE.Mesh(
+    new THREE.SphereGeometry(R * 1.004, 48, 32),
+    new THREE.MeshBasicMaterial({ map: tex, color: 0x24354f, transparent: true, opacity: 0, depthWrite: false })
+  );
+  shadow.renderOrder = 1;
+  const clouds = new THREE.Mesh(
+    new THREE.SphereGeometry(R * 1.022, 48, 32),
+    new THREE.MeshLambertMaterial({ map: tex, transparent: true, opacity: 0, depthWrite: false })
+  );
+  clouds.renderOrder = 1.5;
+  globeGroup.add(shadow); globeGroup.add(clouds);
+  globe.clouds = clouds; globe.cloudsShadow = shadow;
+  updateCloudTarget();
+}
+/* 학습 레이어가 켜져 있으면 구름을 옅게 — 내용 가독성 우선 */
+function updateCloudTarget() {
+  const L = state.layers;
+  const busy = L.belts || L.cells || L.winds || L.precip || L.insol;
+  globe.cloudTarget = busy ? 0.2 : 0.8;
+}
+
 let detailedEarthQueued = false;
 function queueDetailedEarth() {
   if (detailedEarthQueued) return;
@@ -723,9 +912,34 @@ function needsGlobeLayers(L) {
 
 function buildGlobeShell() {
   if (globeShellReady) return;
-  globe.mat = new THREE.MeshLambertMaterial({ map: getQuickEarthTexture() });
+  /* 바다의 은은한 광택(스페큘러) — 빛 방향에 따라 표면이 살아 보임 */
+  globe.mat = new THREE.MeshPhongMaterial({ map: getQuickEarthTexture(), specular: 0x2e3b4d, shininess: 13 });
   globeGroup.add(new THREE.Mesh(new THREE.SphereGeometry(R, 48, 32), globe.mat));
   startRemoteEarthLoad();
+
+  /* 대기 산란 느낌 — 프레넬 림: 지구 가장자리가 하늘색으로 은은하게 빛남 */
+  const atmo = new THREE.Mesh(
+    new THREE.SphereGeometry(R * 1.028, 48, 32),
+    new THREE.ShaderMaterial({
+      uniforms: { cTint: { value: new THREE.Color(0x86b8f4) } },
+      vertexShader:
+        "varying float vF;" +
+        "void main(){" +
+        "  vec3 n = normalize(normalMatrix * normal);" +
+        "  vec4 mv = modelViewMatrix * vec4(position, 1.0);" +
+        "  vF = pow(1.0 - abs(dot(n, normalize(-mv.xyz))), 2.4);" +
+        "  gl_Position = projectionMatrix * mv;" +
+        "}",
+      fragmentShader:
+        "uniform vec3 cTint; varying float vF;" +
+        "void main(){ gl_FragColor = vec4(cTint, vF * 0.85); }",
+      transparent: true, depthWrite: false
+    })
+  );
+  atmo.renderOrder = 1;
+  globeGroup.add(atmo);
+
+  globe.clouds = null; globe.cloudsShadow = null; globe.cloudTarget = 0.8;
 
   const gcv = document.createElement("canvas");
   gcv.width = 256; gcv.height = 256;
@@ -888,10 +1102,14 @@ function buildGlobePrecip() {
 function buildGlobeCells() {
   disposeGroup(globe.cells);
   const sh = seasonShift();
-  const rIn = R * 1.06, rOut = R * 1.30;
+  const rIn = R * 1.06;
   const uv = roundedLoopUV(0.2);
   [15, 135, 255].forEach(lonM => {
     CELLS.forEach(c => {
+      /* 위도별 층후 — 저위도(해들리)는 두껍고 높게, 고위도(극)는 얇고 낮게 */
+      const rOut = rIn + R * 0.245 * c.top;
+      const headR = Math.max(c.tubeG * 2.4, 0.034);
+      const headL = Math.max(c.tubeG * 5.2, 0.078);
       [1, -1].forEach(hemi => {
         const latRise = clampLat(c.rise * hemi + sh);
         const latSink = clampLat(c.sink * hemi + sh);
@@ -901,7 +1119,7 @@ function buildGlobeCells() {
           const rad = rIn + (rOut - rIn) * p[1];
           return latLonToVec(lat, lonM, rad);
         });
-        const lg = loopGeom(pts, 0.017, 0.05, 0.115, [0.14, 0.5, 0.86]);
+        const lg = loopGeom(pts, c.tubeG, headR, headL, [0.14, 0.5, 0.86]);
         globe.cells.add(new THREE.Mesh(lg.geom, MAT["cell_" + c.id]));
       });
     });
@@ -962,54 +1180,40 @@ function buildGlobeWinds() {
   }
 }
 
-/* 햇빛과 기온(일사) — 태양·평행 광선·입사 면적으로 열적 불균형 표현 (1단계)
-   광선은 지구본에 붙어 함께 회전하며, 이 레이어가 켜진 동안 자동 회전은 멈춤 */
-const INSOL_LON = 10;   // 초기 카메라 각도에서 화면 오른쪽 앞면에 오는 경도
+/* 햇빛과 기온(일사) — 평행 광선·입사 면적으로 열적 불균형 표현 (1단계)
+   태양은 화면 오른쪽에 고정되어 있으므로, 광선·입사면은 지구를 돌려도
+   항상 태양 쪽을 향하도록 insolSpin 그룹의 회전을 매 프레임 보정한다. */
+const INSOL_LON = 10;         // 광선이 붙는 기준 경도(그룹 회전으로 태양 쪽에 정렬됨)
+const INSOL_FACE = -0.55;     // 태양을 향하도록 하는 기준 각(라디안)
 function buildGlobeInsol() {
   disposeGroup(globe.insol);
   globe.insolDots = [];
-  const n = latLonToVec(0, INSOL_LON, 1);   // 태양 방향 단위 벡터
+  const n = latLonToVec(0, INSOL_LON, 1);   // 태양 방향 단위 벡터(그룹 기준)
 
-  // 태양
-  const cv = document.createElement("canvas");
-  cv.width = 160; cv.height = 160;
-  const ctx = cv.getContext("2d");
-  ctx.fillStyle = "#ffcf4d"; ctx.strokeStyle = "#eba81f"; ctx.lineWidth = 6;
-  ctx.beginPath(); ctx.arc(80, 80, 34, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-  ctx.strokeStyle = "#ffcf4d"; ctx.lineWidth = 10; ctx.lineCap = "round";
-  for (let i = 0; i < 10; i++) {
-    const a = i / 10 * Math.PI * 2;
-    ctx.beginPath();
-    ctx.moveTo(80 + Math.cos(a) * 46, 80 + Math.sin(a) * 46);
-    ctx.lineTo(80 + Math.cos(a) * 64, 80 + Math.sin(a) * 64);
-    ctx.stroke();
-  }
-  const sunMat = new THREE.SpriteMaterial({ map: setSRGB(new THREE.CanvasTexture(cv)), transparent: true, depthWrite: false });
-  sunMat.userData.own = true;
-  const sun = new THREE.Sprite(sunMat);
-  sun.scale.set(0.5, 0.5, 1);
-  sun.position.copy(n).multiplyScalar(R * 1.92);
-  globe.insol.add(sun);
+  /* 지구 회전과 무관하게 태양 쪽을 향하는 하위 그룹 */
+  const spin = new THREE.Group();
+  globe.insol.add(spin);
+  globe.insolSpin = spin;
 
   const sunLab = makeLabel("태양 빛", {
     sub: "지구에 거의 평행하게 도달", fontSize: 32, color: "#9a6b09",
     bg: "rgba(255,248,222,0.95)", border: "rgba(214,164,50,0.6)", worldHeight: 0.14, pad: 13
   });
-  sunLab.position.copy(n).multiplyScalar(R * 1.92);
-  sunLab.position.y -= 0.44;
-  globe.insol.add(sunLab);
+  sunLab.position.copy(n).multiplyScalar(R * 2.22);
+  sunLab.position.y -= 0.50;
+  spin.add(sunLab);
 
   // 평행 광선 — 적도는 수직 입사, 고위도는 비스듬히 입사
   [0, 45, -45, 75, -75].forEach(lat => {
     const end = latLonToVec(lat, INSOL_LON, R * 1.02);
-    const start = end.clone().addScaledVector(n, 1.12);
-    const mid = end.clone().addScaledVector(n, 0.56);
+    const start = end.clone().addScaledVector(n, 1.45);
+    const mid = end.clone().addScaledVector(n, 0.72);
     const ar = arrowGeom([start, mid, end], 0.018, 0.05, 0.12);
-    globe.insol.add(new THREE.Mesh(ar.geom, MAT.sunRay));
+    spin.add(new THREE.Mesh(ar.geom, MAT.sunRay));
     for (let k = 0; k < 2; k++) {
       const sp = new THREE.Sprite(MAT.flowDot);
       sp.scale.set(0.06, 0.06, 1);
-      globe.insol.add(sp);
+      spin.add(sp);
       globe.insolDots.push({ curve: ar.curve, t: k / 2, sprite: sp });
     }
   });
@@ -1022,7 +1226,7 @@ function buildGlobeInsol() {
       Math.min(t0, t1), Math.abs(t1 - t0));
     const m = new THREE.Mesh(geo, mat);
     m.renderOrder = 2;
-    globe.insol.add(m);
+    spin.add(m);
   }
   patch(-8, 8, INSOL_LON - 9, INSOL_LON + 9, MAT.patchHot);
   patch(58, 84, INSOL_LON - 26, INSOL_LON + 26, MAT.patchCold);
@@ -1033,7 +1237,7 @@ function buildGlobeInsol() {
     bg: "rgba(255,255,255,0.95)", border: COL.heat + "88", worldHeight: 0.155, pad: 14
   });
   eqLab.position.copy(latLonToVec(0, INSOL_LON, R * 1.20));
-  globe.insol.add(eqLab);
+  spin.add(eqLab);
 
   [1, -1].forEach(hemi => {
     const l = makeLabel("넓은 면적으로 분산", {
@@ -1041,7 +1245,7 @@ function buildGlobeInsol() {
       bg: "rgba(255,255,255,0.95)", border: COL.cold + "88", worldHeight: 0.155, pad: 14
     });
     l.position.copy(latLonToVec(60 * hemi, INSOL_LON - 38, R * 1.30));
-    globe.insol.add(l);
+    spin.add(l);
   });
 }
 
@@ -1232,6 +1436,10 @@ function buildCrossCells() {
   const vB = GROUND_Y + 0.13, vT = TOP_Y - 0.15;
 
   CELLS.forEach(c => {
+    /* 위도별 층후 — 순환 상층 높이와 튜브 굵기를 함께 차등 */
+    const cT = vB + (vT - vB) * c.top;
+    const headR = Math.max(c.tubeX * 2.6, 0.040);
+    const headL = Math.max(c.tubeX * 5.4, 0.088);
     [1, -1].forEach(hemi => {
       const latRise = clampLat(c.rise * hemi + sh);
       const latSink = clampLat(c.sink * hemi + sh);
@@ -1241,10 +1449,10 @@ function buildCrossCells() {
       const xS = latToX(latSink) + (latToX(latSink) > latToX(latRise) ? -inset : inset);
       const pts = uv.map(p => new THREE.Vector3(
         xS + (xR - xS) * p[0],
-        vB + (vT - vB) * p[1],
+        vB + (cT - vB) * p[1],
         0
       ));
-      const lg = loopGeom(pts, 0.020, 0.062, 0.135, [0.13, 0.42, 0.63, 0.9]);
+      const lg = loopGeom(pts, c.tubeX, headR, headL, [0.13, 0.42, 0.63, 0.9]);
       cross.cells.add(new THREE.Mesh(lg.geom, MAT["cell_" + c.id]));
 
       // 흐름 점 3개(아주 약한 애니메이션)
@@ -1261,11 +1469,30 @@ function buildCrossCells() {
           sub: c.range, fontSize: 34, color: "#" + new THREE.Color(c.color).getHexString(),
           bg: "rgba(255,255,255,0.95)", border: c.color + "77", worldHeight: 0.155, pad: 14
         });
-        lab.position.set((xR + xS) / 2, vT + 0.02, 0.12);
+        lab.position.set((xR + xS) / 2, cT + 0.02, 0.12);
         cross.cells.add(lab);
       }
     });
   });
+
+  /* 층후 안내선 — 공기층(대류권)의 높이: 적도에서 두껍고 극으로 갈수록 얇음 */
+  const topH = CELLS[0].top, topP = CELLS[2].top;
+  const tpPts = [];
+  for (let lat = -90; lat <= 90; lat += 4) {
+    const ratio = topP + (topH - topP) * Math.pow(Math.max(0, Math.cos(lat * DEG)), 0.9);
+    tpPts.push(new THREE.Vector3(latToX(lat), vB + (vT - vB) * ratio + 0.06, -0.01));
+  }
+  const tpGeo = new THREE.BufferGeometry().setFromPoints(tpPts);
+  const tpLine = new THREE.Line(tpGeo, new THREE.LineDashedMaterial({
+    color: 0x6b7fa3, dashSize: 0.07, gapSize: 0.05, transparent: true, opacity: 0.55
+  }));
+  tpLine.computeLineDistances();
+  cross.cells.add(tpLine);
+  const tpLab = makeLabel("공기층의 높이 — 적도는 두껍고, 극으로 갈수록 얇아요", {
+    fontSize: 26, color: "#5b6f92", halo: "rgba(255,255,255,0.92)", worldHeight: 0.078
+  });
+  tpLab.position.set(latToX(-42), vB + (vT - vB) * (topP + (topH - topP) * 0.62) + 0.20, 0.05);
+  cross.cells.add(tpLab);
 }
 
 /* 단면: 땅 가까이 부는 바람(지면 화살표) */
@@ -1319,26 +1546,10 @@ function buildCrossPrecip() {
   icon(-86, MAT.dryIcon, GROUND_Y + 1.30, 0.24);
 }
 
-/* 단면: 태양 위치 표시(계절 슬라이더와 연동) */
+/* 단면: 태양 위치 표시(계절 슬라이더와 연동) — 3D 태양 */
 function buildCrossSun() {
   disposeGroup(cross.sunG);
-  const cv = document.createElement("canvas");
-  cv.width = 160; cv.height = 160;
-  const ctx = cv.getContext("2d");
-  ctx.fillStyle = "#ffcf4d"; ctx.strokeStyle = "#eba81f"; ctx.lineWidth = 6;
-  ctx.beginPath(); ctx.arc(80, 80, 34, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-  ctx.strokeStyle = "#ffcf4d"; ctx.lineWidth = 10; ctx.lineCap = "round";
-  for (let i = 0; i < 10; i++) {
-    const a = i / 10 * Math.PI * 2;
-    ctx.beginPath();
-    ctx.moveTo(80 + Math.cos(a) * 46, 80 + Math.sin(a) * 46);
-    ctx.lineTo(80 + Math.cos(a) * 64, 80 + Math.sin(a) * 64);
-    ctx.stroke();
-  }
-  const sunMat = new THREE.SpriteMaterial({ map: setSRGB(new THREE.CanvasTexture(cv)), transparent: true, depthWrite: false });
-  sunMat.userData.own = true;
-  cross.sun = new THREE.Sprite(sunMat);
-  cross.sun.scale.set(0.3, 0.3, 1);
+  cross.sun = makeSun3D(0.14);
   cross.sunG.add(cross.sun);
   cross.sunLabel = makeLabel("햇빛이 가장 강한 곳", {
     fontSize: 27, color: "#9a6b09", bg: "rgba(255,248,222,0.95)", border: "rgba(214,164,50,0.6)",
@@ -1350,8 +1561,8 @@ function buildCrossSun() {
 function updateCrossSun() {
   if (!cross.sun) return;
   const x = latToX(state.season * 23.5);
-  cross.sun.position.set(x, TOP_Y + 0.30, 0.1);
-  cross.sunLabel.position.set(x, TOP_Y + 0.30 - 0.22, 0.12);
+  cross.sun.position.set(x, TOP_Y + 0.32, 0.1);
+  cross.sunLabel.position.set(x, TOP_Y + 0.32 - 0.30, 0.12);
   cross.sunLabel.visible = Math.abs(state.season) > 0.02;
 }
 
@@ -1384,7 +1595,7 @@ function buildCrossPickers() {
 function applyVisibility() {
   const L = state.layers, isGlobe = state.view === "globe";
   if (!isGlobe) ensureCrossBuilt();
-  if (L.insol) ensureGlobeInsol();
+  if (L.insol) { ensureGlobeInsol(); ensureFixedSun(); }
   if (L.winds && !L.coriolis) ensureGlobeWindsStr();
 
   globeGroup.visible = isGlobe;
@@ -1396,6 +1607,7 @@ function applyVisibility() {
   globe.cells.visible  = globeLayersReady && L.cells;
   globe.grid.visible   = globeLayersReady && L.grid;
   globe.insol.visible  = insolReady && L.insol;
+  if (sunFixed) sunFixed.visible = isGlobe && insolReady && L.insol;
   globe.windsCor.visible = globeLayersReady && L.winds && L.coriolis;
   globe.windsStr.visible = windsStrReady && L.winds && !L.coriolis;
 
@@ -1406,6 +1618,8 @@ function applyVisibility() {
     cross.winds.visible  = L.winds;
     cross.grid.visible   = L.grid;
   }
+
+  updateCloudTarget();
 
   document.getElementById("controls-hint").textContent = isGlobe
     ? "드래그: 돌리기 · 휠/두 손가락: 확대·축소 · 색깔 띠 클릭: 설명 카드"
@@ -1457,6 +1671,50 @@ function refitCamera(force) {
   camera.lookAt(0, 0, 0);
 }
 
+/* ------------------------------------------------------------
+   카메라 연출(트윈) — 단계 전환 시 부드럽게 이동/줌
+   사용자가 드래그·휠을 시작하면 즉시 취소되어 조작을 방해하지 않음
+   ------------------------------------------------------------ */
+const camAnim = { on: false, t0: 0, dur: 0, fx: 0, fy: 0, fz: 0, tx: 0, ty: 0, tz: 0 };
+function easeInOutCubic(u) { return u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2; }
+function flyTo(rx, ry, zMul, dur) {
+  const tz = Math.max(fitZ * 0.45, Math.min(fitZ * 1.9, fitZ * (zMul || 1)));
+  if (REDUCED) {
+    if (rx != null) rot.x = rx;
+    if (ry != null) rot.y = ry;
+    camZ = tz; camera.position.z = camZ;
+    return;
+  }
+  camAnim.on = true;
+  camAnim.t0 = performance.now();
+  camAnim.dur = dur || 900;
+  camAnim.fx = rot.x; camAnim.fy = rot.y; camAnim.fz = camZ;
+  camAnim.tx = rx != null ? rx : rot.x;
+  camAnim.ty = ry != null ? ry : rot.y;
+  camAnim.tz = tz;
+}
+function updateCamAnim(now) {
+  if (!camAnim.on) return;
+  let u = (now - camAnim.t0) / camAnim.dur;
+  if (u >= 1) { u = 1; camAnim.on = false; }
+  const k = easeInOutCubic(u);
+  rot.x = camAnim.fx + (camAnim.tx - camAnim.fx) * k;
+  rot.y = camAnim.fy + (camAnim.ty - camAnim.fy) * k;
+  camZ = camAnim.fz + (camAnim.tz - camAnim.fz) * k;
+  camera.position.z = camZ;
+}
+
+/* 단계별 카메라 프리셋 — 저위도 단계는 적도 정면, 고위도 단계는 극이 보이게 기울임 */
+const STEP_CAM = [
+  { rx: 0.30, ry: -0.55, z: 1.00 },  // 1 일사 — 태양·광선 정렬
+  { rx: 0.10, z: 0.90 },             // 2 저위도 — 적도 정면 + 살짝 확대
+  { rx: 0.80, z: 0.95 },             // 3 고위도 — 극이 보이게 기울임
+  { rx: 0.38, z: 1.03 },             // 4 시스템 — 살짝 물러나 전체 조망
+  { rx: 0.28, z: 0.97 },             // 5 강수
+  { rx: 0.20, z: 0.93 },             // 6 바람
+  { rx: 0.44, z: 1.06 }              // 7 결론 — 전체 조망
+];
+
 function onPointerDown(e) {
   if (e.touches && e.touches.length === 2) {
     pinching = true; dragging = false;
@@ -1467,6 +1725,7 @@ function onPointerDown(e) {
     return;
   }
   dragging = true; userTouched = true; dragMoved = 0;
+  camAnim.on = false;   // 사용자 조작 시 카메라 연출 즉시 중단
   const pt = e.touches ? e.touches[0] : e;
   lastX = pt.clientX; lastY = pt.clientY;
 }
@@ -1501,6 +1760,7 @@ function onPointerUp(e) {
 }
 function onWheel(e) {
   e.preventDefault();
+  camAnim.on = false;
   camZ = Math.max(fitZ * 0.45, Math.min(fitZ * 1.9, camZ + (e.deltaY > 0 ? 1 : -1) * fitZ * 0.06));
   camera.position.z = camZ;
 }
@@ -1593,21 +1853,89 @@ function refreshLayerList() {
 }
 /* --- 보기 전환 --- */
 function setView(v) {
+  const changed = state.view !== v;
   state.view = v;
   if (v === "cross") ensureCrossBuilt();
   document.getElementById("view-globe").setAttribute("aria-pressed", String(v === "globe"));
   document.getElementById("view-cross").setAttribute("aria-pressed", String(v === "cross"));
   refitCamera(true);
+  /* 보기 전환 시 살짝 물러났다 제자리로 다가오는 정착 연출 */
+  if (changed && !REDUCED) {
+    camZ = fitZ * 1.14;
+    camera.position.z = camZ;
+    flyTo(null, null, 1, 650);
+  }
   applyVisibility();
 }
 document.getElementById("view-globe").addEventListener("click", function () { setView("globe"); });
 document.getElementById("view-cross").addEventListener("click", function () { setView("cross"); });
 
-/* --- 사이드바 접기/펴기 --- */
+/* --- 사이드바 —
+   데스크톱: 좌측 패널(접기/펴기)
+   모바일: 하단 시트 — 평소엔 축소 바(현재 단계 + ←→)만 보여 지구를 가리지 않고,
+           위로 스와이프하면 패널 확장, 확장 상태에서 좌우 스와이프로 단계 이동 --- */
 const sidebar = document.getElementById("sidebar");
-document.getElementById("sidebar-close").addEventListener("click", function () { sidebar.classList.add("collapsed"); });
+const mqMobile = window.matchMedia("(max-width: 700px)");
+function isMobile() { return mqMobile.matches; }
+
+function sheetExpand(open) {
+  if (open) { sidebar.classList.add("expanded"); sidebar.classList.remove("collapsed"); }
+  else { sidebar.classList.remove("expanded"); sidebar.classList.add("collapsed"); }
+}
+document.getElementById("sidebar-close").addEventListener("click", function () { sheetExpand(false); });
 document.getElementById("sidebar-handle").addEventListener("click", function () { sidebar.classList.remove("collapsed"); });
-if (window.innerWidth < 700) sidebar.classList.add("collapsed");
+if (isMobile()) sidebar.classList.add("collapsed");   // 모바일: 축소 바 상태로 시작
+
+if (mqMobile.addEventListener) {
+  mqMobile.addEventListener("change", function (e) {
+    if (e.matches) sheetExpand(false);
+    else sidebar.classList.remove("collapsed", "expanded");
+  });
+}
+
+/* 단계 이동(스와이프·화살표 공용) — 아직 시작 전이면 1단계부터 */
+function stepDelta(d) {
+  const n = state.stepIndex < 0 ? (d > 0 ? 0 : -1) : state.stepIndex + d;
+  if (n >= 0 && n < STEPS.length) applyStep(n);
+}
+
+/* 축소 바: 위/아래 스와이프 = 열고 닫기 · 좌/우 스와이프 = 단계 이동 · 탭 = 토글 */
+const sheetBar = document.getElementById("sheet-bar");
+document.getElementById("sheet-prev").addEventListener("click", function (e) { e.stopPropagation(); stepDelta(-1); });
+document.getElementById("sheet-next").addEventListener("click", function (e) { e.stopPropagation(); stepDelta(1); });
+
+let shX = 0, shY = 0, shT = 0;
+sheetBar.addEventListener("touchstart", function (e) {
+  if (e.target.closest(".sb-arrow")) return;
+  shX = e.touches[0].clientX; shY = e.touches[0].clientY; shT = Date.now();
+}, { passive: true });
+sheetBar.addEventListener("touchend", function (e) {
+  if (e.target.closest(".sb-arrow")) return;
+  const dx = e.changedTouches[0].clientX - shX;
+  const dy = e.changedTouches[0].clientY - shY;
+  if (Math.abs(dy) > 26 && Math.abs(dy) > Math.abs(dx)) { sheetExpand(dy < 0); return; }
+  if (Math.abs(dx) > 42 && Math.abs(dx) > Math.abs(dy) * 1.6) { stepDelta(dx < 0 ? 1 : -1); return; }
+  if (Date.now() - shT < 350 && Math.abs(dx) < 10 && Math.abs(dy) < 10)
+    sheetExpand(!sidebar.classList.contains("expanded"));
+});
+sheetBar.addEventListener("click", function (e) {
+  if (e.target.closest(".sb-arrow")) return;
+  if (!("ontouchstart" in window)) sheetExpand(!sidebar.classList.contains("expanded"));  // 마우스 환경 대비
+});
+
+/* 확장된 시트 본문: 좌/우로 크게 쓸면 단계 이동(세로 스크롤은 그대로 동작) */
+const sheetBody = document.querySelector(".sidebar-body");
+let sbX = 0, sbY = 0, sbOK = false;
+sheetBody.addEventListener("touchstart", function (e) {
+  sbOK = isMobile() && sidebar.classList.contains("expanded") && !e.target.closest("input, button");
+  sbX = e.touches[0].clientX; sbY = e.touches[0].clientY;
+}, { passive: true });
+sheetBody.addEventListener("touchend", function (e) {
+  if (!sbOK) return;
+  const dx = e.changedTouches[0].clientX - sbX;
+  const dy = e.changedTouches[0].clientY - sbY;
+  if (Math.abs(dx) > 64 && Math.abs(dx) > Math.abs(dy) * 2.2) stepDelta(dx < 0 ? 1 : -1);
+});
 
 /* --- 계절 슬라이더 --- */
 function seasonText(v) {
@@ -1645,9 +1973,19 @@ function applyStep(i) {
   state.focus = s.focus || null;
   state.showPressure = !!s.pressure;
   if (needsGlobeLayers(s.layers)) ensureGlobeLayers();
-  if (s.view !== state.view) setView(s.view);
-  // 1단계(일사)는 태양·광선이 잘 보이는 각도로 지구본 정렬
-  if (s.layers.insol) { rot.x = 0.3; rot.y = -0.55; }
+  /* 보기 유지 — 단면을 보고 있으면 단면인 채로 다음 단계가 이어짐.
+     단, 1단계(일사 애니메이션)는 지구본 전용이라 지구본으로 전환 */
+  if (s.layers.insol && state.view !== "globe") setView("globe");
+  // 단계별 카메라 연출 — 그 단계 내용이 잘 보이는 각도·거리로 부드럽게 이동
+  const cp = STEP_CAM[i];
+  if (state.view === "globe" && cp) {
+    flyTo(cp.rx, cp.ry != null ? cp.ry : null, cp.z, 950);
+  } else if (state.view === "cross" && !REDUCED && Math.abs(camZ - fitZ) < fitZ * 0.05) {
+    /* 단면 보기: 사용자가 줌을 바꾸지 않았을 때만 살짝 물러났다 제자리로 (전환 피드백) */
+    camZ = fitZ * 1.07;
+    camera.position.z = camZ;
+    flyTo(null, null, 1, 550);
+  }
   refreshLayerList();
   applyVisibility();
   applyFocus();
@@ -1667,6 +2005,14 @@ function applyStep(i) {
     if (k === i && li.scrollIntoView) li.scrollIntoView({ block: "nearest" });
   });
   document.getElementById("season-section").classList.toggle("spotlight", !!s.seasonSpot);
+
+  /* 모바일 하단 시트 바 동기화 + 지구가 보이도록 시트는 축소 상태로 */
+  const sbStep = document.getElementById("sheet-step");
+  if (sbStep) {
+    sbStep.textContent = (i + 1) + " / " + STEPS.length;
+    document.getElementById("sheet-title").textContent = s.title;
+  }
+  if (isMobile()) sheetExpand(false);
 }
 document.getElementById("step-prev").addEventListener("click", function () {
   if (state.stepIndex > 0) applyStep(state.stepIndex - 1);
@@ -1694,14 +2040,27 @@ function loop(now) {
   const dt = Math.min((now - last) / 1000, 0.05); last = now;
   const t = now / 1000;
   resize();
+  updateCamAnim(now);
 
   globeGroup.rotation.x = rot.x;
   globeGroup.rotation.y = rot.y;
 
   if (state.view === "globe") {
-    if (!userTouched && !REDUCED && !state.layers.insol) rot.y += dt * 0.05;
-    if (state.layers.insol && insolReady && !REDUCED) {
-      for (let i = 0; i < globe.insolDots.length; i++) {
+    if (!userTouched && !REDUCED && !camAnim.on && !state.layers.insol) rot.y += dt * 0.05;
+    /* 구름층 — 지구와 별개로 아주 느리게 흐르고, 그림자는 살짝 비껴 따라감(높이감) */
+    if (globe.clouds) {
+      if (!REDUCED) globe.clouds.rotation.y += dt * 0.007;
+      globe.cloudsShadow.rotation.y = globe.clouds.rotation.y - 0.035;
+      const cm = globe.clouds.material;
+      if (Math.abs(cm.opacity - globe.cloudTarget) > 0.004) {
+        cm.opacity += (globe.cloudTarget - cm.opacity) * Math.min(1, dt * 2.5);
+        globe.cloudsShadow.material.opacity = cm.opacity * 0.38;
+      }
+    }
+    if (state.layers.insol && insolReady) {
+      /* 광선·입사면이 항상 태양(화면 오른쪽) 쪽을 향하도록 보정 */
+      if (globe.insolSpin) globe.insolSpin.rotation.y = INSOL_FACE - rot.y;
+      if (!REDUCED) for (let i = 0; i < globe.insolDots.length; i++) {
         const d = globe.insolDots[i];
         d.t = (d.t + dt * 0.3) % 1;
         d.sprite.position.copy(d.curve.getPointAt(d.t));
@@ -1716,6 +2075,8 @@ function loop(now) {
       }
     }
   } else {
+    if (cross.sun && cross.sun.userData.core && !REDUCED)
+      cross.sun.userData.core.rotation.y += dt * 0.18;   // 태양 자전
     if (state.layers.cells && !REDUCED) {
       for (let i = 0; i < cross.flowDots.length; i++) {
         const d = cross.flowDots[i];
@@ -1727,6 +2088,11 @@ function loop(now) {
   }
 
   pulseFocus(t);
+  /* 화면 오른쪽 고정 태양 — 확대·화면비가 바뀌어도 항상 같은 자리에 */
+  if (sunFixed && sunFixed.visible) {
+    positionFixedSun();
+    if (!REDUCED) sunFixed.userData.core.rotation.y += dt * 0.09;   // 태양 자전
+  }
   renderer.render(scene, camera);
   requestAnimationFrame(loop);
 }
@@ -1753,6 +2119,7 @@ function init() {
       applyFocus();
     });
     runWhenIdle(queueDetailedEarth);
+    runWhenIdle(buildClouds);
     runWhenIdle(function () { if (!crossReady) ensureCrossBuilt(); });
   });
 }

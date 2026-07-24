@@ -28,6 +28,7 @@
   --shadow-soft: 0 4px 14px rgba(35, 65, 120, .08);
   --radius: 16px;
   --sidebar-w: 352px;
+  --sheet-peek: 78px;   /* 모바일 하단 시트: 축소 바 높이 */
 
   --font: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
           "Malgun Gothic", "맑은 고딕", "Noto Sans KR", system-ui, sans-serif;
@@ -397,6 +398,66 @@ input[type="range"]::-moz-range-thumb {
   .card { right: 12px; top: 12px; width: 306px; }
   .controls-hint { display: none; }
 }
+/* ============================================================
+   모바일 하단 시트 — 사이드바가 화면 아래 시트로 전환
+   평소: 축소 바(현재 단계 + ← →)만 보여 지구를 가리지 않음
+   위로 스와이프: 패널 확장 / 확장 상태 좌우 스와이프: 단계 이동
+   ============================================================ */
+.sheet-bar { display: none; }   /* 데스크톱에서는 숨김 */
+
+@media (max-width: 700px) {
+  .sidebar {
+    top: auto; left: 0; right: 0; bottom: 0;
+    width: 100%; max-width: 100%;
+    height: min(74vh, 560px);
+    border-right: 0; border-top: 1px solid var(--line);
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -12px 34px rgba(35, 65, 120, .18);
+    transform: translateY(calc(100% - var(--sheet-peek)));
+  }
+  .sidebar.collapsed { transform: translateY(calc(100% - var(--sheet-peek))); }
+  .sidebar.expanded  { transform: translateY(0); }
+
+  .sidebar-handle { display: none; }   /* 시트 바가 항상 보이므로 손잡이 불필요 */
+  .sidebar-head   { display: none; }   /* 시트 바가 헤더 역할 */
+
+  .sheet-bar {
+    display: flex; flex-direction: column; align-items: stretch;
+    height: var(--sheet-peek); flex: none;
+    padding: 7px 10px 8px;
+    touch-action: none;   /* 스와이프 제스처는 JS에서 처리 */
+    user-select: none; -webkit-user-select: none;
+    cursor: grab;
+  }
+  .sheet-bar .grip {
+    width: 42px; height: 4.5px; border-radius: 4px;
+    background: #c7d3e4; margin: 0 auto 7px; flex: none;
+  }
+  .sheet-row { display: flex; align-items: center; gap: 8px; flex: 1; min-height: 0; }
+  .sb-arrow {
+    width: 42px; height: 42px; border-radius: 12px; flex: none;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--panel-2); border: 1px solid var(--line);
+    color: var(--ink); cursor: pointer;
+    transition: background .13s ease;
+  }
+  .sb-arrow svg { width: 20px; height: 20px; }
+  .sb-arrow:active { background: var(--accent-soft); border-color: rgba(43,111,227,.4); }
+  .sb-info { flex: 1; min-width: 0; text-align: center; }
+  .sb-step {
+    display: block; font-size: 11px; font-weight: 800;
+    color: var(--accent); letter-spacing: .05em;
+  }
+  .sb-title {
+    display: block; font-size: 13.5px; font-weight: 700; line-height: 1.35;
+    color: var(--ink);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  .sidebar-body { padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px)); }
+  .card { top: 12px; }
+}
+
 @media (max-width: 520px) {
   .topbar { gap: 8px; padding: 0 10px; }
   .brand h1 { font-size: 15px; }
