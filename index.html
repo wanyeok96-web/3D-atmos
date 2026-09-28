@@ -9,39 +9,11 @@
 </head>
 <body>
 
-<!-- ====================== 상단바 ====================== -->
-<header class="topbar">
-  <div class="brand">
-    <span class="glyph">🌍</span>
-    <div>
-      <h1>대기대순환 3D</h1>
-      <div class="sub">지구의 바람 흐름이 비와 기후를 만드는 과정</div>
-    </div>
-  </div>
-
-  <div class="seg view" role="group" aria-label="보기 전환">
-    <span class="seg-label">보기</span>
-    <button id="view-globe" aria-pressed="true">
-      <span class="full">지구 전체 보기</span><span class="short">지구 전체</span>
-    </button>
-    <button id="view-cross" aria-pressed="false">
-      <span class="full">공기 흐름 단면 보기</span><span class="short">공기 단면</span>
-    </button>
-  </div>
-
-  <button class="present-btn" id="present-btn" aria-pressed="false" title="발표 모드 — 전체 화면·큰 자막 (F)">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <rect x="3" y="4" width="18" height="12" rx="2"/><line x1="12" y1="16" x2="12" y2="20"/><line x1="8" y1="20" x2="16" y2="20"/>
-    </svg>
-    <span class="full">발표 모드</span>
-  </button>
-</header>
-
 <!-- ====================== 레이아웃 ====================== -->
 <div class="layout">
 
   <!-- 사이드바를 열기 위한 손잡이 (닫혔을 때 노출) -->
-  <button class="sidebar-handle" id="sidebar-handle" aria-label="조작 패널 열기" title="조작 패널 열기">
+  <button class="sidebar-handle" id="sidebar-handle" aria-label="패널 열기" title="패널 열기">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
       <line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/>
     </svg>
@@ -67,11 +39,18 @@
       </div>
     </div>
 
+    <!-- 사이드바 맨 위: 프로그램 이름 + 패널 접기 -->
     <div class="sidebar-head">
-      <h2 id="sidebar-title">조작 패널</h2>
-      <button class="close" id="sidebar-close" aria-label="패널 닫기" title="패널 닫기">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <line x1="15" y1="6" x2="6" y2="15"/><line x1="6" y1="6" x2="15" y2="15"/>
+      <div class="brand">
+        <span class="glyph" aria-hidden="true">🌍</span>
+        <div>
+          <h1>대기대순환 3D</h1>
+          <div class="sub">지구의 바람 흐름이 비와 기후를 만드는 과정</div>
+        </div>
+      </div>
+      <button class="close" id="sidebar-close" aria-label="패널 접기" title="패널 접기">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="11 17 6 12 11 7"/><polyline points="18 17 13 12 18 7"/>
         </svg>
       </button>
     </div>
@@ -128,7 +107,6 @@
       </div>
     </section>
 
-    <div class="controls-hint" id="controls-hint">드래그: 돌리기 · 휠/두 손가락: 확대·축소</div>
 
     <!-- 그림 자료 (장면에서 fig로 표시) -->
     <figure class="fig" id="fig-energy" data-fig="energy" aria-hidden="true">
@@ -195,6 +173,8 @@
         <ul>
           <li>화면 아래 <b>▶</b>를 누를 때마다 설명과 함께 <b>장면이 하나씩</b> 진행됩니다.</li>
           <li>왼쪽 <b>「이해하기」</b>에서 단계를 누르면 그 단계의 첫 장면부터 시작해요.</li>
+          <li>패널 위쪽 <b>«</b> 버튼으로 패널을 접으면 3D 화면을 넓게 쓸 수 있어요(왼쪽 위 ☰로 다시 열기).</li>
+          <li>교실 TV에서는 키보드 <b>F</b>를 누르면 <b>발표 모드</b>(전체 화면·큰 자막)가 돼요. Esc로 끝내요.</li>
           <li>지구를 <b>드래그</b>해서 돌려 보세요. <b>색깔 띠를 클릭</b>하면 설명 카드가 나타납니다.</li>
           <li>휴대전화에서는 아래 바를 <b>위로 쓸어올려</b> 패널을 열고, <b>좌우로 쓸어</b> 장면을 넘길 수 있어요.</li>
         </ul>

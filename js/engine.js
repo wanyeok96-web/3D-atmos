@@ -244,6 +244,9 @@ function renderPlayer() {
   document.querySelectorAll("#step-list li").forEach(function (li, n) {
     li.classList.toggle("on", n === i);
     li.setAttribute("aria-current", n === i ? "step" : "false");
+    const pg = li.querySelector(".prog");                  // 지금 단계 아래 「장면 3 / 7」
+    pg.hidden = n !== i;
+    if (n === i) pg.textContent = "장면 " + (k + 1) + " / " + st.beats.length;
   });
   const onLi = document.querySelector("#step-list li.on");
   if (onLi && onLi.scrollIntoView && !isMobile()) onLi.scrollIntoView({ block: "nearest" });
@@ -267,7 +270,6 @@ function flashEnd() {
 function isPresent() { return document.body.classList.contains("present"); }
 function setPresent(on) {
   document.body.classList.toggle("present", on);
-  $("present-btn").setAttribute("aria-pressed", String(on));
   const de = document.documentElement;
   if (on && de.requestFullscreen && !document.fullscreenElement) {
     de.requestFullscreen().catch(function () { /* 전체 화면이 막혀도 발표 모드는 유지 */ });
@@ -288,7 +290,6 @@ $("tp-replay").addEventListener("click", replayStep);
 $("tp-auto").addEventListener("click", function () { setAuto(!player.auto); });
 $("tp-speed").addEventListener("click", cycleSpeed);
 $("cap-a-btn").addEventListener("click", toggleAnswer);
-$("present-btn").addEventListener("click", function () { setPresent(!isPresent()); });
 $("present-exit").addEventListener("click", function () { setPresent(false); });
 
 /* ------------------------------------------------------------

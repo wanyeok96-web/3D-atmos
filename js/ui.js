@@ -12,8 +12,6 @@ function setView(v) {
   const changed = state.view !== v;
   state.view = v;
   if (v === "cross") ensureCrossBuilt();
-  document.getElementById("view-globe").setAttribute("aria-pressed", String(v === "globe"));
-  document.getElementById("view-cross").setAttribute("aria-pressed", String(v === "cross"));
   refitCamera(true);
   /* 보기 전환 시 살짝 물러났다 제자리로 다가오는 정착 연출 */
   if (changed && !REDUCED) {
@@ -23,8 +21,7 @@ function setView(v) {
   }
   applyVisibility();
 }
-document.getElementById("view-globe").addEventListener("click", function () { changeView("globe"); });
-document.getElementById("view-cross").addEventListener("click", function () { changeView("cross"); });
+/* 보기(지구 전체 / 공기 흐름 단면)는 장면이 정함 — 보기 전환 버튼 없음 */
 
 /* --- 사이드바 —
    데스크톱: 좌측 패널(접기/펴기)
@@ -114,7 +111,8 @@ function buildStepList() {
   ol.innerHTML = "";
   STEPS.forEach(function (s, i) {
     const li = document.createElement("li");
-    li.innerHTML = '<span class="num">' + (i + 1) + "</span><span>" + s.title + "</span>";
+    li.innerHTML = '<span class="num">' + (i + 1) + '</span><span class="t"><span>' + s.title +
+      '</span><span class="prog" hidden></span></span>';   // prog: 지금 보고 있는 단계의 장면 진행(engine.js)
     li.setAttribute("tabindex", "0");
     li.setAttribute("role", "button");
     const go = function () {

@@ -18,9 +18,6 @@ function applyVisibility() {
   sweepFadeMats();
   updateCloudTarget();
 
-  document.getElementById("controls-hint").textContent = isGlobe
-    ? "드래그: 돌리기 · 휠/두 손가락: 확대·축소 · 색깔 띠 클릭: 설명 카드"
-    : "색깔 띠(기둥)를 클릭: 설명 카드 · 휠/두 손가락: 확대·축소";
 }
 
 /* 계절 변경 → 위치 의존 요소 재생성(프레임당 1회로 제한) */

@@ -564,8 +564,6 @@ function changeView(v, onDone) {
   if (REDUCED) { setView(v); if (onDone) onDone(); return; }
   const dir = v === "cross" ? 1 : -1;
   state.view = v;
-  document.getElementById("view-globe").setAttribute("aria-pressed", String(v === "globe"));
-  document.getElementById("view-cross").setAttribute("aria-pressed", String(v === "cross"));
   startViewTransition(dir, onDone);
   applyVisibility();
 }

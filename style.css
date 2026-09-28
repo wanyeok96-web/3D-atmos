@@ -27,7 +27,7 @@
   --shadow:      0 10px 30px rgba(35, 65, 120, .12);
   --shadow-soft: 0 4px 14px rgba(35, 65, 120, .08);
   --radius: 16px;
-  --sidebar-w: 352px;
+  --sidebar-w: 300px;
   --sheet-peek: 78px;   /* 모바일 하단 시트: 축소 바 높이 */
 
   --font: "AocSans", "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
@@ -61,70 +61,16 @@ h1, h2, h3, .step-title, .step-list li, .card-top h3, figcaption, .fig-note, .fi
 :focus-visible { outline: 2.5px solid var(--accent); outline-offset: 2px; border-radius: 8px; }
 
 /* ============================================================
-   상단바
+   사이드바 맨 위 — 프로그램 이름
    ============================================================ */
-.topbar {
-  position: fixed; top: 0; left: 0; right: 0; height: 62px;
-  display: flex; align-items: center; gap: 14px;
-  padding: 0 18px;
-  background: rgba(255,255,255,.92);
-  border-bottom: 1px solid var(--line);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 1px 0 rgba(35,65,120,.04);
-  z-index: 30;
-}
-
-.brand {
-  display: flex; align-items: center; gap: 11px;
-  margin-right: auto;
-  user-select: none;
-}
+.brand { display: flex; align-items: center; gap: 11px; min-width: 0; user-select: none; }
 .brand .glyph {
-  width: 38px; height: 38px; border-radius: 12px;
+  width: 40px; height: 40px; border-radius: 12px; flex: none;
   display: flex; align-items: center; justify-content: center;
-  font-size: 21px; line-height: 1;
-  background: var(--accent-soft);
+  font-size: 22px; line-height: 1; background: var(--accent-soft);
 }
-.brand h1 {
-  font-size: 17px; font-weight: 800; letter-spacing: -.01em;
-}
-.brand .sub {
-  font-size: 12px; color: var(--muted); font-weight: 500;
-  letter-spacing: .01em; margin-top: 1px;
-}
-
-/* 세그먼트 토글 (보기 전환) */
-.seg {
-  display: inline-flex; align-items: center; background: var(--panel-2);
-  border: 1px solid var(--line); border-radius: 12px; padding: 4px;
-  gap: 3px;
-}
-.seg button {
-  font-family: inherit; font-size: 14px; font-weight: 700;
-  color: var(--muted); background: transparent; border: 0; cursor: pointer;
-  padding: 9px 15px; border-radius: 9px; transition: all .16s ease;
-  white-space: nowrap; min-height: 40px;
-}
-.seg button:hover { color: var(--ink); }
-.seg button[aria-pressed="true"] {
-  color: #fff; background: var(--accent);
-  box-shadow: 0 3px 10px rgba(43,111,227,.32);
-}
-.seg-label {
-  font-size: 12px; color: var(--muted); margin: 0 4px 0 6px;
-  letter-spacing: .03em; font-weight: 600;
-}
-.seg button .short { display: none; }
-
-/* 발표 모드 버튼 */
-.present-btn {
-  display: inline-flex; align-items: center; gap: 7px;
-  font-family: inherit; font-size: 14px; font-weight: 700; color: var(--ink);
-  background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
-  padding: 0 14px; min-height: 48px; cursor: pointer; transition: all .15s ease;
-}
-.present-btn svg { width: 19px; height: 19px; flex: none; }
-.present-btn:hover { background: var(--accent-soft); border-color: rgba(43,111,227,.35); color: var(--accent); }
+.brand h1 { font-size: 17px; font-weight: 800; letter-spacing: -.01em; }
+.brand .sub { font-size: 11.5px; color: var(--muted); font-weight: 500; line-height: 1.4; margin-top: 2px; text-wrap: balance; }
 
 kbd {
   display: inline-block; min-width: 1.6em; padding: 1px 5px; border-radius: 5px;
@@ -135,7 +81,7 @@ kbd {
 /* ============================================================
    레이아웃: 사이드바(좌) + 3D 무대
    ============================================================ */
-.layout { position: fixed; inset: 62px 0 0 0; }
+.layout { position: fixed; inset: 0; }
 
 /* 사이드바 토글 손잡이 (사이드바가 닫혔을 때 노출) */
 .sidebar-handle {
@@ -162,10 +108,9 @@ kbd {
 .sidebar.collapsed { transform: translateX(calc(-100% - 6px)); }
 
 .sidebar-head {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 17px 20px 13px; border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 16px 14px 14px 16px; border-bottom: 1px solid var(--line);
 }
-.sidebar-head h2 { font-size: 15px; font-weight: 800; letter-spacing: .01em; }
 .sidebar-head .close {
   width: 34px; height: 34px; border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
@@ -240,6 +185,9 @@ body.present .sidebar-foot { display: none; }
   border-color: rgba(43,111,227,.35);
   color: var(--accent);
 }
+.step-list li .t { display: flex; flex-direction: column; min-width: 0; }
+.step-list li .prog { font-size: 11.5px; font-weight: 700; color: var(--accent); opacity: .8; margin-top: 1px; }
+.step-list li .prog[hidden] { display: none; }
 .step-list li.on .num { background: var(--accent); border-color: var(--accent); color: #fff; }
 
 /* --- 이해 순서: 현재 단계 카드 --- */
@@ -418,13 +366,6 @@ input[type="range"]::-moz-range-thumb {
 }
 .card .sum::before { content: "한 줄 정리 · "; font-weight: 800; color: #b07f1d; }
 
-/* 회전/조작 힌트 */
-.controls-hint {
-  position: absolute; top: 14px; right: 18px; z-index: 16;
-  font-size: 12px; color: var(--muted); font-weight: 500;
-  background: rgba(255,255,255,.85); border: 1px solid var(--line);
-  padding: 7px 12px; border-radius: 10px; backdrop-filter: blur(5px);
-}
 
 /* ============================================================
    장면 재생기 — 화면 자막 + 진행 막대
@@ -557,11 +498,8 @@ body.present .fig figcaption { font-size: 16px; }
   padding: 7px 11px; cursor: pointer; opacity: .55; transition: opacity .2s ease;
 }
 .present-exit:hover { opacity: 1; }
-body.present .topbar,
 body.present .sidebar,
-body.present .sidebar-handle,
-body.present .controls-hint { display: none; }
-body.present .layout { inset: 0; }
+body.present .sidebar-handle { display: none; }
 body.present .present-exit { display: block; }
 body.present .cap { width: min(1080px, 100%); padding: 16px 28px 19px; }
 body.present .cap-step { font-size: 15px; }
@@ -588,19 +526,8 @@ body.present .card { top: 60px; }
 /* ============================================================
    반응형 — 태블릿 / 크롬북 / 휴대전화
    ============================================================ */
-@media (max-width: 900px) {
-  .seg button .full { display: none; }
-  .seg button .short { display: inline; }
-}
 @media (max-width: 760px) {
-  :root { --sidebar-w: 312px; }
-  .brand .sub { display: none; }
-  .seg-label { display: none; }
-  .seg button { padding: 8px 11px; font-size: 13px; }
   .card { right: 12px; top: 12px; width: 306px; }
-  .controls-hint { display: none; }
-  .present-btn .full { display: none; }
-  .present-btn { padding: 0 11px; min-height: 44px; }
 }
 /* ============================================================
    모바일 하단 시트 — 사이드바가 화면 아래 시트로 전환
@@ -624,7 +551,8 @@ body.present .card { top: 60px; }
   .sidebar.expanded  { transform: translateY(0); }
 
   .sidebar-handle { display: none; }   /* 시트 바가 항상 보이므로 손잡이 불필요 */
-  .sidebar-head   { display: none; }   /* 시트 바가 헤더 역할 */
+  .sidebar-head   { padding: 12px 16px; }   /* 펼친 시트 안에서 프로그램 이름 표시 */
+  .sidebar-head .close { display: none; }  /* 시트는 아래로 쓸어 닫음 */
 
   .sheet-bar {
     display: flex; flex-direction: column; align-items: stretch;
@@ -670,7 +598,6 @@ body.present .card { top: 60px; }
   .cap-step { font-size: 11px; margin-bottom: 3px; }
   .cap-text { font-size: 14.5px; line-height: 1.52; }
   .cap-q .q-row { font-size: 14px; }
-  .present-btn { display: none; }
   .fig, .fig-orbit { width: min(215px, calc(100% - 24px)); left: 10px; top: 10px; padding: 7px 9px; }
   .fig figcaption { font-size: 12px; }
   .fig .fig-sub, .fig-legend { display: none; }
@@ -697,9 +624,8 @@ body.present .card { top: 60px; }
 }
 
 @media (max-width: 520px) {
-  .topbar { gap: 8px; padding: 0 10px; }
   .brand h1 { font-size: 15px; }
-  .brand .glyph { width: 32px; height: 32px; font-size: 17px; border-radius: 10px; }
+  .brand .glyph { width: 34px; height: 34px; font-size: 18px; border-radius: 10px; }
 }
 
 /* 모션 최소화 선호 존중 */
@@ -708,3 +634,6 @@ body.present .card { top: 60px; }
   .cap.enter, .cap-a { animation: none; }
   .spinner { animation: none; }
 }
+
+/* 패널을 접으면 왼쪽 위 ☰ 버튼 자리를 비워 둠 */
+.sidebar.collapsed ~ .stage .fig { left: 76px; }
