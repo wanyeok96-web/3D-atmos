@@ -27,7 +27,7 @@
      draw     : 그리기 진행도 — 순환 고리는 0~4 구간(1구간씩 그려짐), 적지 않으면 끝까지
                 예) { "cell-hadley": 2 } → 적도 상승 + 상층 흐름까지만
                 (해들리: 상승→상층→하강→지표 / 극: 하강→지표→상승→상층 / 페렐: 지표→상승→상층→하강)
-     parcel   : 공기 덩어리 애니메이션 — ["warm0"] 적도 상승 / ["cold90"] 극 하강 / [] 없음
+     parcel   : 공기 덩어리 애니메이션 — ["warm0"] 적도 상승 / ["cold90"] 극 하강 / ["split30"] 30°에서 두 갈래 / ["front60"] 60°에서 만남 / [] 없음
      fig      : 그림 자료 — "energy"(위도별 에너지 과잉·부족 그래프) · "orbit"(공전과 자전축 기울기) / null
      show     : 평소 숨겨 둔 요소 보이기 — "spin"(지구 자전 표시) · "sunlat"(태양이 가장 높이 뜨는 위도·회귀선)
                 · "rg-rf"(열대 우림) · "rg-desert"(사막) · "rg-marine"(서안 해양성) · "rg-savanna"(사바나) · "rg-med"(지중해성) 지역
@@ -39,6 +39,8 @@
      바람        winds(전체) · wind-trade · wind-wester · wind-polar
      강수        wet(비 많음) · dry(건조)
      햇빛        ray(태양 광선) · beam-hot/beam-cold(햇빛 다발) · patch-hot/patch-cold(입사 면적) · temp(기온 색)
+     이름표      name-hadley · name-ferrel · name-polar (단면 순환 고리 이름)
+     전선        front60 (한대 전선 — show로 보이게)
      기타        tropo(공기층 높이 점선) · gear(톱니바퀴) · stamp-L · stamp-H(지표 기압 도장)
      지역 마커   rg-rf · rg-desert · rg-marine   /  자전 표시  spin
    ------------------------------------------------------------ */
@@ -55,6 +57,8 @@ const CAM_EUROPE  = -1.57;   // 서유럽·지중해
 const HIDE_MID_HIGH = ["belt30", "sink30", "belt60", "rise60", "belt90", "sink90", "cell-ferrel", "cell-polar"];
 /* 2~3단계에서는 아직 등장하지 않는 요소 — L/H 도장(4단계), 톱니바퀴(3단계 끝) */
 const HIDE_LATER = ["stamp-L", "stamp-H", "gear"];
+/* 순환 고리 이름표 — 고리가 완성되는 장면에서 이름이 나타나도록 그 전에는 숨김 */
+const NAMES = ["name-hadley", "name-ferrel", "name-polar"];
 
 const STEPS = [
   /* ---------------------------------------------------------- 1 */
@@ -80,8 +84,8 @@ const STEPS = [
 
   /* ---------------------------------------------------------- 2 */
   { title: "저위도 지역의 공기 흐름", short: "저위도의 공기 흐름 — 해들리 순환",
-    body: "적도는 기온이 높아 데워진 공기가 <b>위로 올라갑니다</b>. 올라간 공기는 일정한 높이에서 <b>남북으로 퍼지고</b>, <b>위도 30° 부근에서 다시 내려와</b> 지표를 따라 적도로 돌아갑니다. 이 고리가 <b>해들리 순환</b>입니다.",
-    base: { view: "cross", layers: layersOf({ grid: true }), focus: null, hide: HIDE_MID_HIGH.concat(HIDE_LATER),
+    body: "적도는 기온이 높아 데워진 공기가 <b>위로 올라갑니다</b>. 올라간 공기는 일정한 높이에서 <b>남북으로 퍼지고</b>, <b>위도 30° 부근에서 다시 내려와</b> 지표에서 두 갈래로 흩어집니다. 적도 쪽으로 돌아가는 고리가 <b>해들리 순환</b>이고, 일부는 <b>60° 쪽</b>으로 흘러갑니다.",
+    base: { view: "cross", layers: layersOf({ grid: true }), focus: null, hide: HIDE_MID_HIGH.concat(HIDE_LATER, NAMES),
             pressure: false, season: 0, cam: { z: 1 } },
     beats: [
       { cap: "지구를 세로로 잘라 옆에서 본 모습이에요. <b>왼쪽은 남극, 가운데는 적도, 오른쪽은 북극</b>이에요." },
@@ -90,10 +94,14 @@ const STEPS = [
       { cap: "올라간 공기는 일정한 높이(점선)에 이르면 더 올라가지 못하고 <b>남북 양쪽으로 퍼져 나가요</b>.",
         layers: { cells: true }, draw: { "cell-hadley": 2 }, focus: ["cell-hadley", "tropo"], parcel: [] },
       { cap: "퍼져 나간 공기는 식으면서 <b>위도 30° 부근에서 다시 내려와요</b>.",
-        hide: ["belt60", "rise60", "belt90", "sink90", "cell-ferrel", "cell-polar"].concat(HIDE_LATER),
+        hide: ["belt60", "rise60", "belt90", "sink90", "cell-ferrel", "cell-polar"].concat(HIDE_LATER, NAMES),
         draw: { "cell-hadley": 3 }, focus: ["cell-hadley", "belt30", "sink30"] },
-      { cap: "내려온 공기는 땅을 따라 다시 적도로 돌아가요. 이렇게 생긴 고리를 <b>해들리 순환</b>이라고 해요.",
-        draw: { "cell-hadley": 4 }, focus: ["cell-hadley"] },
+      { cap: "내려온 공기는 지표에서 <b>두 갈래</b>로 퍼져요. 일부는 적도 쪽으로, 일부는 <b>60° 쪽</b>으로 흘러가요.",
+        hide: ["belt60", "rise60", "belt90", "sink90", "cell-polar"].concat(HIDE_LATER, NAMES),
+        draw: { "cell-hadley": 4, "cell-ferrel": 1 }, focus: ["cell-hadley", "cell-ferrel", "belt30"], parcel: ["split30"] },
+      { cap: "적도 쪽으로 돌아간 공기가 고리를 이루어요. 이것이 <b>해들리 순환</b>이에요.",
+        hide: ["belt60", "rise60", "belt90", "sink90", "cell-polar", "name-ferrel", "name-polar"].concat(HIDE_LATER),
+        focus: ["cell-hadley"], parcel: [] },
       { cap: "적도에서 올라가고 30°에서 내려오는 고리가 남반구와 북반구에 하나씩 생겼어요.",
         focus: null,
         q: "올라간 공기는 왜 우주로 나가지 않고 위도 30° 부근에서 다시 내려올까요?",
@@ -102,20 +110,27 @@ const STEPS = [
 
   /* ---------------------------------------------------------- 3 */
   { title: "고위도 지역의 공기 흐름", short: "고위도의 공기 흐름 — 극 순환과 페렐 순환",
-    body: "극지방은 기온이 낮아 차가운 공기가 <b>아래로 내려옵니다</b>. 내려온 공기는 지표를 따라 <b>위도 60° 부근</b>까지 가서 저위도에서 온 공기와 만나 <b>다시 올라갑니다</b>(극 순환). 30°와 60° 사이에는 두 고리에 맞물려 도는 <b>페렐 순환</b>이 생깁니다.",
+    body: "극지방의 차가운 공기는 <b>아래로 내려와</b> 지표를 따라 <b>위도 60° 부근</b>으로 퍼집니다. 30° 쪽에서 온 따뜻한 공기와 60°에서 만나 따뜻한 공기가 <b>올라가고</b>(한대 전선), 위에서 다시 갈라져 극 쪽으로는 <b>극 순환</b>, 30° 쪽으로는 <b>페렐 순환</b>이 만들어집니다.",
     base: { view: "cross", layers: layersOf({ grid: true, belts: true, cells: true }), focus: null,
-            hide: ["belt60", "rise60", "belt90", "sink90", "cell-ferrel", "cell-polar"].concat(HIDE_LATER),
-            pressure: false, season: 0, cam: { z: 1 } },
+            hide: ["belt60", "rise60", "belt90", "sink90", "cell-polar", "name-ferrel", "name-polar"].concat(HIDE_LATER),
+            draw: { "cell-ferrel": 1 }, pressure: false, season: 0, cam: { z: 1 } },
     beats: [
       { cap: "극지방은 햇빛을 적게 받아 공기가 차가워요. 차갑고 무거운 공기는 <b>아래로 내려와요</b>.",
-        hide: ["belt60", "rise60", "cell-ferrel", "cell-polar"].concat(HIDE_LATER), focus: ["belt90", "sink90"], parcel: ["cold90"] },
-      { cap: "내려온 공기는 땅을 따라 <b>위도 60° 부근</b>까지 퍼져 나가요.",
-        hide: ["belt60", "rise60", "cell-ferrel"].concat(HIDE_LATER), draw: { "cell-polar": 2 },
-        focus: ["cell-polar", "belt90", "sink90"], parcel: [] },
-      { cap: "60° 부근에서 저위도에서 온 따뜻한 공기와 만나 <b>다시 올라가요</b>. 이 고리가 <b>극 순환</b>이에요.",
-        hide: ["cell-ferrel"].concat(HIDE_LATER), draw: { "cell-polar": 4 }, focus: ["cell-polar", "belt60", "rise60"] },
-      { cap: "30°와 60° 사이에는 두 고리에 끼어 도는 <b>페렐 순환</b>이 생겨요. 지표에서는 60° 쪽으로 흘러요.",
-        hide: HIDE_LATER, focus: ["cell-ferrel"] },
+        focus: ["belt90", "sink90"], parcel: ["cold90"] },
+      { cap: "내려온 공기는 땅을 따라 <b>60° 쪽</b>으로 퍼져요. 30°에서 온 공기도 60° 쪽으로 오고 있어요.",
+        hide: ["belt60", "rise60", "name-ferrel", "name-polar"].concat(HIDE_LATER), draw: { "cell-polar": 2 },
+        focus: ["cell-polar", "cell-ferrel", "belt90", "sink90"], parcel: [] },
+      { cap: "두 공기가 <b>60° 부근에서 만나요</b>. 따뜻한 공기가 찬 공기 위로 올라타요 — <b>한대 전선</b>이에요.",
+        hide: ["rise60", "name-ferrel", "name-polar"].concat(HIDE_LATER), show: ["front60"],
+        focus: ["front60", "belt60", "cell-polar", "cell-ferrel"], parcel: ["front60"] },
+      { cap: "그래서 60° 부근에서는 공기가 <b>위로 올라가요</b>.",
+        hide: ["name-ferrel", "name-polar"].concat(HIDE_LATER), draw: { "cell-polar": 3, "cell-ferrel": 2 },
+        focus: ["cell-polar", "cell-ferrel", "belt60", "rise60", "front60"], parcel: [] },
+      { cap: "올라간 공기는 위에서 다시 갈라져요. 극 쪽으로 돌아가는 고리가 <b>극 순환</b>이에요.",
+        hide: ["name-ferrel"].concat(HIDE_LATER), draw: { "cell-polar": 4, "cell-ferrel": 3 },
+        focus: ["cell-polar", "cell-ferrel"] },
+      { cap: "30° 쪽으로 온 공기는 해들리 순환과 함께 내려와요. 이 고리가 <b>페렐 순환</b>이에요.",
+        hide: HIDE_LATER, draw: { "cell-ferrel": 4 }, focus: ["cell-ferrel", "cell-hadley", "belt30", "sink30"] },
       { cap: "세 고리는 <b>톱니바퀴처럼 맞물려</b> 돌아요. 이웃한 고리끼리는 도는 방향이 서로 반대예요.",
         hide: ["stamp-L", "stamp-H"], focus: null,
         q: "위도 60° 부근에서 공기가 다시 올라가는 까닭은 무엇일까요?",

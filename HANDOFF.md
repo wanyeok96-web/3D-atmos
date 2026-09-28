@@ -3,7 +3,7 @@
 > **이 파일을 먼저 읽고 작업을 이어가세요.** Claude Code, Cursor, ChatGPT 등 어떤 도구로 작업하든 이 파일 하나로 현재 상태·규칙·다음 할 일을 파악할 수 있도록 정리했습니다.
 > 작업을 마칠 때마다 맨 아래 **「7. 작업 기록」**에 한 줄 이상 추가해 주세요.
 
-- 마지막 갱신: 2026-09-28 (Claude Code) — **5절 개편 13개 항목 모두 완료 (A·B-1·C·B-2)**
+- 마지막 갱신: 2026-09-28 (Claude Code) — 5절 개편 완료 + **2·3단계 공기 흐름 보완(49장면)**
 - 사용자: 고등학교 교사 (통합사회·한국지리·세계지리). **보고·설명은 한국어로**.
 - 개편 전 원본 백업: 옆 폴더 `대기대순환 3D_백업_개편전`
 - 배포본: 옆 폴더의 `대기대순환3D_배포.zip` (작업 후 다시 만들어야 최신이 됨)
@@ -13,13 +13,13 @@
 
 ## 1. 프로젝트 한눈에 보기
 
-수업용 3D 대기대순환 교구. **선생님이 한 번 누를 때마다 자막 한두 문장 + 그에 맞는 애니메이션 한 장면**이 진행된다. 8단계 · 46장면.
+수업용 3D 대기대순환 교구. **선생님이 한 번 누를 때마다 자막 한두 문장 + 그에 맞는 애니메이션 한 장면**이 진행된다. 8단계 · 49장면.
 
 | 단계 | 내용 | 보기 |
 |---|---|---|
 | 1 | 위도별 일사량(빛기둥·입사 면적)·기온 색·에너지 과잉/부족 그래프 | 지구본 |
-| 2 | 지구본을 잘라 단면으로 펼침 → 해들리 순환이 구간별로 그려짐, 데워진 공기 덩어리 상승 | 단면 |
-| 3 | 극 순환 → 페렐 순환 → 톱니바퀴처럼 맞물림 | 단면 |
+| 2 | 지구본을 잘라 단면으로 펼침 → 해들리 순환이 구간별로 그려짐, 30°에서 두 갈래(적도·60° 쪽) | 단면 |
+| 3 | 극 하강 → 60°에서 만남(한대 전선) → 함께 상승 → 위에서 갈라져 극·페렐 순환 → 톱니바퀴 | 단면 |
 | 4 | L/H 도장 → 단면을 다시 지구에 감기 | 단면→지구본 |
 | 5 | 구름 생성→비 / 구름 소멸(건조) → 사막 마커 | 단면→지구본 |
 | 6 | 곧은 바람 → 자전 표시 → 바람이 휘어지는 모핑(전향력) | 지구본 |
@@ -81,7 +81,7 @@ js/
 - `goBeat(i,k)`: `forward`(한 장면 앞으로)일 때만 애니메이션, 아니면 `snapGrows()`·`snapWinds()`·계절 즉시.
 - 보기가 바뀌면 `changeView()` → 단면 자르기/감기 전환(`startViewTransition`), 끝난 뒤 카메라 이동.
 - 장면 필드: `cap, view, layers, focus, hide, pressure, season, cam{rx,ry,z}, q, a, draw, parcel, fig, show` (steps.js 머리 주석 참고).
-- `show`: 기본 숨김 요소(OPTIONAL_TAGS: spin, sunlat, rg-*)를 보이게. 다음 장면에도 유지, `show: []`로 숨김.
+- `show`: 기본 숨김 요소(OPTIONAL_TAGS: spin, sunlat, front60, rg-*)를 보이게. 다음 장면에도 유지, `show: []`로 숨김.
 
 ### 3-3. 표시 관리 (core.js 4절) — 페이드·강조·숨김
 - 레이어 그룹을 `regFadeGroup(group, key)`로 등록, `defFade(key, want)`로 보일 조건 정의.
@@ -130,6 +130,8 @@ js/
 - **색**: 무역풍을 청록(#0fb3a3)으로 바꿔 적도(빨강)·30°(주황) 띠와 구분. 기압대 띠 투명도 0.66.
 - **공기 덩어리 기호**: 온도계 + ▲/▼(`parcelSignTex`), 덩어리 바로 위.
 
+- **2·3단계 공기 흐름**: 여러 고리를 한 장면에서 동시에 한 구간씩 그림(`draw: { "cell-hadley": 4, "cell-ferrel": 1 }`). 구간 순서 — 해들리: 상승→상층→하강→지표 / 페렐: 지표(30→60)→상승(60)→상층→하강(30) / 극: 하강→지표(→60)→상승(60)→상층. 순환 이름표는 태그 `name-hadley·name-ferrel·name-polar`로 따로 숨김(`NAMES`). 경로형 공기 덩어리 `split30`(30°에서 두 갈래)·`front60`(60°에서 만남)은 effects.js `mover`/`updateMover`(키프레임 [시각, 위도, 높이]). 한대 전선은 cross.js `buildCrossBelts` 끝(태그 `front60`, show로 표시).
+
 ### 3-9. 기타
 - 애니메이션 속도 `animSpeed`(0.65/1/1.5, localStorage `aoc3d-speed`): main.js에서 `adt = dt*animSpeed`를 전환·계절·grow·바람에, flyTo 시간·자동 재생 대기에 반영.
 - 저사양 보호: 평균 26fps 미만이 4초 이어지면 pixelRatio 1로 (main.js `perfGuard`).
@@ -155,7 +157,7 @@ while(true){ const i=state.stepIndex,k=state.beatIndex;
   try{ nextBeat(); }catch(e){ errs.push(i+':'+k+' '+e.message); break; }
   n++; await new Promise(r=>setTimeout(r,60)); }
 for (let i=STEPS.length-1;i>=0;i--){ try{ goBeat(i,STEPS[i].beats.length-1); prevBeat(); }catch(e){ errs.push('back '+i+' '+e.message);} }
-finishViewTransition(); finishSeasonAnim(); ({n, errs})   // 기대: n=46, errs=[]
+finishViewTransition(); finishSeasonAnim(); ({n, errs})   // 기대: n=49, errs=[]
 ```
 
 ### 4-3. 장면 스크린샷 (윈도우, 헤드리스 엣지)
@@ -218,7 +220,7 @@ finishViewTransition(); finishSeasonAnim(); ({n, errs})   // 기대: n=46, errs=
 - 지구본 요소를 새로 놓을 때 **위경도는 실제 지리 값**(동경 +). 화면 정면 기준 배치는 `frontLon()` 사용.
 - 단면 요소 위치는 계절 이동 중 그룹 평행 이동으로 처리되므로 `seasonShift()`로 만든 위치를 그대로 쓰면 됨. 경계는 `CROSS_LAT_MAX`.
 - 스프라이트 라벨은 `makeLabel()`(캔버스 텍스처, `userData.own` → disposeGroup 시 해제).
-- 단계·장면을 추가/삭제하면 README·교사용_안내.html의 **장면 수(현재 46)**와 수업 흐름 표도 함께 수정.
+- 단계·장면을 추가/삭제하면 README·교사용_안내.html의 **장면 수(현재 49)**와 수업 흐름 표도 함께 수정.
 - 작업이 끝나면 **배포 zip 재생성**:
   ```powershell
   Compress-Archive -Path "…\대기대순환 3D" -DestinationPath "…\대기대순환3D_배포.zip" -Force
@@ -241,3 +243,4 @@ finishViewTransition(); finishSeasonAnim(); ({n, errs})   // 기대: n=46, errs=
 | 2026-09-23 | Claude Code | 전체 점검 → 글자·디자인·움직임 개편 제언(5절) 작성. 이 HANDOFF.md 작성 |
 | 2026-09-23 | Claude Code | **A 글자 정비 완료(5절 1·2·3·12)**: 한국어 줄바꿈(keep-all·pretty/balance·fmtKo), 3D 라벨 최소 크기+가장자리 라벨 흐림, Pretendard 추림본 AocSans 내장(OFL 동봉), 자막·답 다듬기. 46장면 회귀 테스트 통과. 다음: B-1 |
 | 2026-09-28 | Claude Code | **B-1·C·B-2 완료(5절 4~11·13)**: 순환 고리 기온 색+흐르는 줄무늬, 바람 화살표 개편(28개·꼬리 가늘게·흰 테두리·줄무늬, 무역풍 청록), 단면 상승·하강 흐름 띠, 지구 사진 밝기 조절, 시간 토큰 DUR, 장면 안 순서·자막 밑줄·강조 밖 움직임 정지, 반복 전환 1.1초, 자동 재생 대기 보정, 태양 일러스트 원반+단면 빛줄기, 기압대 띠 반투명·강수 아이콘 14개, 공기 덩어리 온도계 기호. 46장면 회귀 테스트 통과, 셰이더 오류 0. 5절 전부 완료 |
+| 2026-09-28 | Claude Code | **2·3단계 공기 흐름 보완**: 2단계 30°에서 두 갈래(해들리 지표+페렐 첫 구간 동시, 공기 덩어리 split30), 3단계 60°에서 만남(한대 전선·front60)→극·페렐 동시 상승→상층에서 갈라져 두 고리 완성, 이름표 태그 분리. 46→49장면, 회귀 테스트 통과 |

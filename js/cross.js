@@ -168,6 +168,27 @@ function buildCrossBelts() {
     ll.position.set(x, TOP_Y + 0.12, 0.03);
     cross.belts.add(ll);
   });
+
+  /* 한대 전선 (3단계) — 60°에서 따뜻한 공기가 차가운 공기 위로 올라타는 경계면.
+     찬 공기가 쐐기처럼 아래로 파고드므로 경계면은 60°에서 극 쪽으로 갈수록 높아짐 */
+  [1, -1].forEach(hemi => {
+    const l0 = 60 * hemi + sh;
+    if (Math.abs(l0) > CROSS_LAT_MAX) return;
+    const x0 = latToX(l0), x1 = latToX(l0 + 13 * hemi);
+    const y0 = GROUND_Y + 0.02, y1 = GROUND_Y + 0.62;
+    const mat = tagMat(new THREE.MeshBasicMaterial({ color: 0x7048e8, transparent: true, opacity: 0.85, depthWrite: false }), "front60");
+    mat.userData.own = true;
+    const curve = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(x0, y0, 0.2), new THREE.Vector3(x0 + (x1 - x0) * 0.45, y0 + (y1 - y0) * 0.3, 0.2), new THREE.Vector3(x1, y1, 0.2)
+    ]);
+    cross.belts.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 16, 0.014, 6, false), mat));
+    if (hemi > 0) {
+      const lab = makeLabel("한대 전선", { sub: "따뜻한 공기가 찬 공기 위로", fontSize: 28, color: "#5b36c9", bg: "rgba(255,255,255,0.95)", border: "rgba(112,72,232,0.55)", worldHeight: 0.15, pad: 10 });
+      tagMat(lab.material, "front60");
+      lab.position.set(x1 + 0.36, y1 - 0.02, 0.32);   // 전선 윗끝의 극 쪽 옆 — 오르는 따뜻한 공기 라벨과 겹치지 않게
+      cross.belts.add(lab);
+    }
+  });
 }
 
 /* 단면 상승·하강 흐름 띠 (그리기 grow 대상: 태그 rise0·sink30…) */
@@ -243,7 +264,7 @@ function buildCrossCells() {
           sub: c.range, fontSize: 34, color: "#" + new THREE.Color(c.color).getHexString(),
           bg: "rgba(255,255,255,0.95)", border: c.color + "77", worldHeight: 0.155, pad: 14
         });
-        tagMat(lab.material, "cell-" + c.id);
+        tagMat(lab.material, ["cell-" + c.id, "name-" + c.id]);   // 이름표만 따로 숨길 수 있게(고리가 완성될 때 이름 등장)
         lab.position.set((xR + xS) / 2, cT + 0.02, 0.12);
         cross.cells.add(lab);
       }

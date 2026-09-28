@@ -116,7 +116,7 @@ const REGIONS = [
   { id: "chile",   type: "med",    name: "칠레 중부",           lat: -33, lon: -71, zone: "med" }
 ];
 /* 평소에는 숨기고, 장면의 show 목록에 있을 때만 보이는 요소 */
-const OPTIONAL_TAGS = ["spin", "sunlat", "rg-rf", "rg-desert", "rg-marine", "rg-savanna", "rg-med"];
+const OPTIONAL_TAGS = ["spin", "sunlat", "front60", "rg-rf", "rg-desert", "rg-marine", "rg-savanna", "rg-med"];
 
 const LAYER_DEFS = [
   { id: "insol",    name: "햇빛과 기온",           sub: "위도별 일사 — 열적 불균형", color: "#f6a821" },

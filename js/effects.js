@@ -224,6 +224,32 @@ function buildParcels(group) {
     sign.scale.set(0.15, 0.2, 1); sign.renderOrder = 9; group.add(sign);
     return { id: id, lat: lat, up: up, sp: sp, lab: lab, sign: sign, c0: new THREE.Color(c0), c1: new THREE.Color(c1), s0: s0, s1: s1, t: 0, a: 0 };
   }
+  /* 경로를 따라 움직이는 공기 덩어리 — keys: [[시각 0..1, 위도, 높이 0..1], …] (북반구 기준, 남반구는 위도 뒤집음) */
+  function mover(id, hemi, keys, c0, c1, size, text, sub) {
+    const mat = new THREE.SpriteMaterial({ map: tex, color: new THREE.Color(c0), transparent: true, depthTest: false, depthWrite: false, opacity: 0 });
+    const sp = new THREE.Sprite(mat); sp.renderOrder = 9; group.add(sp);
+    let lab = null;
+    if (text && hemi > 0) {                                  // 라벨은 북반구에만(화면이 복잡하지 않게)
+      lab = makeLabel(text, { sub: sub, fontSize: 26, color: c1, bg: "rgba(255,255,255,0.94)", border: c1 + "88", worldHeight: 0.14, pad: 9, depthTest: false });
+      lab.renderOrder = 9; group.add(lab);
+    }
+    return { id: id, hemi: hemi, keys: keys, sp: sp, lab: lab, sign: null, c0: new THREE.Color(c0), c1: new THREE.Color(c1), s0: size, s1: size, t: 0, a: 0 };
+  }
+  const SPL = "#f2b35a", SPL1 = "#d9861a";
+  /* 2단계: 30°에서 내려온 공기가 지표에서 두 갈래로 — 적도 쪽 / 60° 쪽 */
+  PARCELS.split30 = [];
+  [1, -1].forEach(h => {
+    PARCELS.split30.push(
+      mover("split30", h, [[0, 30, 0.6], [0.35, 30, 0.04], [0.92, 7, 0.04]],  SPL, SPL1, 0.16, "적도 쪽으로", null),
+      mover("split30", h, [[0, 30, 0.6], [0.35, 30, 0.04], [0.92, 53, 0.04]], SPL, SPL1, 0.16, "60° 쪽으로", null));
+  });
+  /* 3단계: 30° 쪽에서 온 따뜻한 공기와 극에서 온 차가운 공기가 60°에서 만나 → 따뜻한 공기가 올라탐 */
+  PARCELS.front60 = [];
+  [1, -1].forEach(h => {
+    PARCELS.front60.push(
+      mover("front60", h, [[0, 38, 0.04], [0.45, 57, 0.05], [0.95, 66, 0.72]], "#ffb347", "#e2503a", 0.17, "따뜻한 공기", "올라타요"),
+      mover("front60", h, [[0, 84, 0.04], [0.5, 63, 0.04], [0.95, 62, 0.06]], "#9cc7ff", "#2f63c9", 0.19, "차가운 공기", "아래로 파고들어요"));
+  });
   PARCELS.warm0 = [one("warm0", 0, true, "#ffb347", "#e2503a", 0.13, 0.22, "데워진 공기", "가벼워져 올라가요")];
   PARCELS.cold90 = [
     one("cold90", 86, false, "#9cc7ff", "#2f63c9", 0.21, 0.13, "차가운 공기", "무거워져 내려와요"),
@@ -231,6 +257,29 @@ function buildParcels(group) {
   ];
 }
 const _pc = new THREE.Color();
+/* 경로형 공기 덩어리 한 개 갱신 — 한 번 4.2초, 끝나면 처음부터 반복 */
+function updateMover(p, dt, vB, vT) {
+  if (!REDUCED) p.t = (p.t + dt / 4.2) % 1; else p.t = 0.7;
+  const u = p.t, K = p.keys;
+  let i = 0;
+  while (i < K.length - 2 && u > K[i + 1][0]) i++;
+  const a = K[i], b = K[i + 1];
+  let f = Math.max(0, Math.min(1, (u - a[0]) / Math.max(1e-4, b[0] - a[0])));
+  f = f * f * (3 - 2 * f);
+  const lat = (a[1] + (b[1] - a[1]) * f) * p.hemi, h = a[2] + (b[2] - a[2]) * f;
+  const x = latToX(clampCross(lat + seasonShift())), y = vB + (vT - vB) * h;
+  const fade = Math.min(1, u / 0.1) * Math.min(1, (1 - u) / 0.1);
+  p.sp.position.set(x, y, 0.3);
+  p.sp.scale.set(p.s0, p.s0, 1);
+  p.sp.material.color.copy(_pc.copy(p.c0).lerp(p.c1, u));
+  p.sp.material.opacity = 0.95 * fade * p.a;
+  p.sp.visible = p.a > 0.01;
+  if (p.lab) {
+    p.lab.position.set(x, y + p.s0 * 0.5 + 0.13, 0.32);
+    p.lab.material.opacity = Math.min(1, fade * 1.4) * p.a;
+    p.lab.visible = p.a > 0.01;
+  }
+}
 function updateParcels(dt) {
   const active = state.parcel || [];
   const inCross = state.view === "cross" && !viewTrans.on;
@@ -240,6 +289,7 @@ function updateParcels(dt) {
     PARCELS[id].forEach(function (p, idx) {
       p.a += ((on ? 1 : 0) - p.a) * Math.min(1, dt * 5);
       if (p.a < 0.01 && !on) { p.a = 0; p.t = 0; }
+      if (p.keys) { updateMover(p, dt, vB, vT); return; }
       if (!REDUCED) p.t = (p.t + dt / 3.6) % 1; else p.t = 0.4;   // 움직임 줄이기: 공기층 중간쯤에 멈춘 모습
       const u = p.t;
       const k = Math.min(1, u / 0.7);                          // 부풀거나 줄어드는 정도
