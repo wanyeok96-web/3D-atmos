@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>대기대순환 3D — 교사용 안내</title>
+<link rel="stylesheet" href="assets/fonts/aocsans.css">
+<style>
+  :root {
+    --ink: #182741; --muted: #5c6b85; --line: #dde6f2; --bg: #f4f8fd; --panel: #ffffff;
+    --accent: #2b6fe3; --accent-soft: #e4eefd; --warm: #fff8e6; --warm-line: #f2e2b8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "AocSans", "Pretendard", -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", "Noto Sans KR", sans-serif;
+    color: var(--ink); background: var(--bg); line-height: 1.65; font-size: 15px;
+  }
+  main { max-width: 920px; margin: 0 auto; padding: 32px 20px 60px; }
+  header { margin-bottom: 26px; }
+  h1 { font-size: 26px; font-weight: 800; letter-spacing: -.01em; }
+  .lead { color: var(--muted); margin-top: 6px; }
+  .open {
+    display: inline-flex; align-items: center; gap: 8px; margin-top: 14px;
+    background: var(--accent); color: #fff; text-decoration: none; font-weight: 800;
+    padding: 11px 18px; border-radius: 12px;
+  }
+  section {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
+    padding: 20px 22px; margin-bottom: 16px;
+  }
+  h2 { font-size: 18px; font-weight: 800; margin-bottom: 10px; }
+  h2 .n { display: inline-flex; width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: #fff;
+          align-items: center; justify-content: center; font-size: 13px; margin-right: 8px; vertical-align: 2px; }
+  p + p { margin-top: 8px; }
+  ul, ol { padding-left: 20px; }
+  li + li { margin-top: 4px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #f1f5fb; font-weight: 800; font-size: 13px; color: var(--muted); }
+  td.c { text-align: center; white-space: nowrap; }
+  kbd {
+    display: inline-block; min-width: 1.7em; padding: 1px 6px; border-radius: 6px; text-align: center;
+    font: 700 12.5px ui-monospace, "D2Coding", monospace; color: var(--ink);
+    background: #fff; border: 1px solid var(--line); border-bottom-width: 2px;
+  }
+  code { font: 600 13px ui-monospace, "D2Coding", monospace; background: #f1f5fb; padding: 1px 6px; border-radius: 6px; }
+  .tip { background: var(--warm); border: 1px solid var(--warm-line); border-radius: 12px; padding: 12px 14px; margin-top: 10px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
+  .box { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; background: #fbfdff; }
+  .box b { display: block; margin-bottom: 4px; }
+  .muted { color: var(--muted); font-size: 13.5px; }
+  a { color: var(--accent); }
+  @media print {
+    body { background: #fff; font-size: 12.5px; }
+    main { padding: 0; }
+    section { break-inside: avoid; border-color: #ccc; }
+    .open { display: none; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>대기대순환 3D — 교사용 안내</h1>
+    <p class="lead">지구의 바람 흐름이 비와 기후를 만드는 과정을 <b>장면 단위 애니메이션</b>으로 설명하는 수업 도구입니다.
+      통합사회(자연환경과 인간)·한국지리·세계지리(세계의 기후)의 기후 단원에서 활용할 수 있습니다.</p>
+    <a class="open" href="index.html">▶ 대기대순환 3D 열기</a>
+  </header>
+
+  <section>
+    <h2><span class="n">1</span>준비 — 설치 없이 바로 실행</h2>
+    <ol>
+      <li>폴더를 <b>통째로</b> 복사해 둡니다(USB·공유 폴더 가능). 폴더 안의 파일 위치를 바꾸지 마세요.</li>
+      <li><b>index.html을 더블클릭</b>하면 실행됩니다. 크롬·엣지·웨일 브라우저를 권장합니다.</li>
+      <li>인터넷이 필요 없습니다. 학교망에서 외부 사이트가 막혀 있어도 똑같이 동작합니다.</li>
+      <li>교실 TV·전자칠판에서는 화면 오른쪽 위 <b>「발표 모드」</b>(또는 <kbd>F</kbd>)를 누르면 전체 화면·큰 자막으로 바뀝니다.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2><span class="n">2</span>조작 — 한 번 누를 때마다 한 장면</h2>
+    <table>
+      <tr><th>하고 싶은 것</th><th>키보드 · 발표용 리모컨</th><th>화면</th></tr>
+      <tr><td>다음 장면</td><td><kbd>→</kbd> <kbd>Space</kbd> <kbd>PgDn</kbd></td><td>아래 파란 <b>▶</b> 버튼</td></tr>
+      <tr><td>이전 장면</td><td><kbd>←</kbd> <kbd>PgUp</kbd></td><td><b>◀</b> 버튼</td></tr>
+      <tr><td>다음·이전 단계로 건너뛰기</td><td><kbd>Shift</kbd>+<kbd>→</kbd> / <kbd>Shift</kbd>+<kbd>←</kbd></td><td>왼쪽 패널의 단계 목록</td></tr>
+      <tr><td>질문의 답 보기</td><td><kbd>A</kbd></td><td>「답 보기」 버튼</td></tr>
+      <tr><td>이 단계 처음부터</td><td><kbd>R</kbd></td><td>⟲ 버튼</td></tr>
+      <tr><td>발표 모드 켜기/끄기</td><td><kbd>F</kbd> / <kbd>Esc</kbd></td><td>「발표 모드」 버튼</td></tr>
+      <tr><td>애니메이션 속도 바꾸기</td><td><kbd>S</kbd></td><td>「느리게 · 보통 · 빠르게」 버튼 (고른 속도는 다음에도 유지)</td></tr>
+      <tr><td>처음 화면으로</td><td><kbd>Home</kbd></td><td>—</td></tr>
+    </table>
+    <div class="tip">
+      <b>노란 점</b>은 「생각해 볼 질문」 장면입니다. 이 장면에서 잠시 멈추고 학생의 생각을 들은 뒤 <kbd>A</kbd>로 답을 펼쳐 보세요.
+      「자동」을 켜 두면 자막 길이에 맞춰 장면이 넘어가다가 질문 장면에서 멈춥니다(자습·복습용).
+    </div>
+    <p class="muted" style="margin-top:10px">지구본은 드래그로 돌리고 휠·두 손가락으로 확대/축소합니다. 색깔 띠나 지역 마커(핀)를 누르면 위도대별 설명 카드가 나타납니다.
+      휴대전화·세로 태블릿에서는 아래 바를 위로 쓸어올려 패널을 열고, 좌우로 쓸어 장면을 넘깁니다.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">3</span>수업 흐름 — 8단계 · 46장면 (약 40~45분)</h2>
+    <table>
+      <tr><th>단계</th><th>핵심 내용 · 화면</th><th class="c">장면</th><th class="c">권장</th></tr>
+      <tr><td><b>1. 대기대순환이란?</b></td><td>같은 굵기의 햇빛이 적도(좁은 면적)와 60°(약 2배 넓은 면적)에 닿는 모습 → 위도별 기온 → 에너지 과잉·부족 그래프(열적 불균형)</td><td class="c">5</td><td class="c">5분</td></tr>
+      <tr><td><b>2. 저위도의 공기 흐름</b></td><td>지구본을 세로로 잘라 단면으로 펼침 → 데워진 공기 덩어리 상승 → 해들리 순환이 상승·상층·하강·지표 순서로 그려짐</td><td class="c">6</td><td class="c">5분</td></tr>
+      <tr><td><b>3. 고위도의 공기 흐름</b></td><td>차가운 공기 하강 → 극 순환 → 페렐 순환 → 세 고리가 톱니바퀴처럼 맞물려 돎</td><td class="c">5</td><td class="c">5분</td></tr>
+      <tr><td><b>4. 시스템과 기압대</b></td><td>지표에 L(저기압)·H(고기압) 도장 → 단면을 다시 지구에 감아 기압대 띠 확인</td><td class="c">5</td><td class="c">4분</td></tr>
+      <tr><td><b>5. 강수</b></td><td>올라가는 공기 → 구름 → 비 / 내려오는 공기 → 구름이 사라짐 → 사막 지역 마커</td><td class="c">5</td><td class="c">5분</td></tr>
+      <tr><td><b>6. 바람</b></td><td>남북으로 곧은 바람 → 지구 자전 → 바람이 서서히 휘어짐(전향력) → 무역풍·편서풍·극동풍</td><td class="c">7</td><td class="c">6분</td></tr>
+      <tr><td><b>7. 결론 — 위도별 기후</b></td><td>열대 우림·사막·서안 해양성 기후 지역 마커 → 마커를 눌러 위도대 카드 확인</td><td class="c">5</td><td class="c">5분</td></tr>
+      <tr><td><b>8. 계절에 따른 기압대 이동</b></td><td>자전축 23.5°·공전 그림 → 7월·1월에 기압대가 연속으로 남북 이동 → 사바나(우기·건기)·지중해성(여름 건조·겨울 비) 기후</td><td class="c">8</td><td class="c">7분</td></tr>
+    </table>
+    <p class="muted" style="margin-top:10px">한 차시에 모두 하기 어렵다면 1~4단계(대기대순환의 형성)와 5~8단계(기후와의 연결)로 나누어 두 차시로 운영해도 좋습니다.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">4</span>원하는 장면 바로 열기</h2>
+    <p>주소 끝에 <code>#단계-장면</code>을 붙이면 그 장면이 바로 열립니다. 진행할 때마다 주소가 자동으로 바뀌므로, 수업을 멈춘 곳에서 새로고침해도 그 장면이 유지됩니다.</p>
+    <div class="grid" style="margin-top:10px">
+      <div class="box"><b><a href="index.html#1-1">index.html#1-1</a></b><span class="muted">1단계 첫 장면(햇빛과 기온)</span></div>
+      <div class="box"><b><a href="index.html#2-1">index.html#2-1</a></b><span class="muted">2단계 — 지구본을 잘라 단면으로</span></div>
+      <div class="box"><b><a href="index.html#6-1">index.html#6-1</a></b><span class="muted">6단계 — 바람과 전향력</span></div>
+      <div class="box"><b><a href="index.html#8-1">index.html#8-1</a></b><span class="muted">8단계 — 계절에 따른 기압대 이동</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">5</span>자막·질문 고치기</h2>
+    <p>화면 자막, 생각해 볼 질문, 답은 모두 <code>js/steps.js</code> 파일 한 곳에 있습니다. 메모장이나 코드 편집기로 열어 <b>따옴표 안의 문장만</b> 바꾸고 저장한 뒤 새로고침하면 반영됩니다.</p>
+    <ul style="margin-top:8px">
+      <li><code>cap:</code> 화면 자막 · <code>q:</code> 질문 · <code>a:</code> 답 · <code>body:</code> 패널에 보이는 단계 설명</li>
+      <li><code>&lt;b&gt;…&lt;/b&gt;</code>로 감싼 부분은 굵게(파란색) 강조됩니다.</li>
+      <li>따옴표(<code>"</code>)나 쉼표를 지우면 동작하지 않을 수 있으니, 고치기 전에 파일을 복사해 두세요.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="n">6</span>문제가 생겼을 때</h2>
+    <table>
+      <tr><th>증상</th><th>확인할 것</th></tr>
+      <tr><td>빈 화면 · "3D 라이브러리를 불러오지 못했습니다"</td><td>폴더 구조가 그대로인지 확인하세요(<code>index.html</code>, <code>style.css</code>, <code>js</code>, <code>assets</code>, <code>libs</code>가 한 폴더 안에 있어야 함). 압축 파일은 <b>압축을 푼 뒤</b> 실행하세요.</td></tr>
+      <tr><td>"3D 화면(WebGL)을 사용할 수 없습니다"</td><td>크롬·엣지로 다시 열어 보세요. 브라우저 설정에서 「그래픽 가속」이 꺼져 있으면 켜야 합니다.</td></tr>
+      <tr><td>화면이 느리거나 끊김</td><td>느린 컴퓨터에서는 몇 초 뒤 자동으로 화질을 낮춰 부드럽게 만듭니다. 다른 프로그램·탭을 닫고, 필요하면 왼쪽 패널을 닫아 보세요.</td></tr>
+      <tr><td>전체 화면이 안 됨</td><td>일부 기기는 전체 화면을 막습니다. 이때도 발표 모드(큰 자막·패널 숨김)는 그대로 쓸 수 있습니다.</td></tr>
+      <tr><td>키보드가 반응하지 않음</td><td>3D 화면을 한 번 클릭한 뒤 다시 눌러 보세요. 입력 칸에 커서가 있으면 단축키가 동작하지 않습니다.</td></tr>
+      <tr><td>애니메이션 없이 장면만 바뀜</td><td>기기 설정의 「동작 줄이기(움직임 최소화)」가 켜져 있으면 애니메이션 없이 완성된 장면이 바로 보입니다.</td></tr>
+    </table>
+  </section>
+
+  <p class="muted" style="text-align:center">지구 사진: NASA Blue Marble(퍼블릭 도메인) · 글꼴: Pretendard 기반 AocSans(SIL OFL 1.1, assets/fonts/OFL.txt) · 3D 라이브러리: three.js · 외부 통신 없음</p>
+</main>
+</body>
+</html>

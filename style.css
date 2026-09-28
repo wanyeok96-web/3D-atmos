@@ -30,7 +30,7 @@
   --sidebar-w: 352px;
   --sheet-peek: 78px;   /* 모바일 하단 시트: 축소 바 높이 */
 
-  --font: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+  --font: "AocSans", "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
           "Malgun Gothic", "맑은 고딕", "Noto Sans KR", system-ui, sans-serif;
   --mono: "SF Mono", "JetBrains Mono", "D2Coding", ui-monospace, Menlo, monospace;
 }
@@ -41,12 +41,21 @@ html, body { height: 100%; }
 
 body {
   font-family: var(--font);
+  /* 한국어는 단어(어절) 단위로 줄바꿈 — 기본값은 글자 단위라 "맑/고", "전향/력"처럼 끊김 */
+  word-break: keep-all;
+  overflow-wrap: break-word;   /* 한 줄보다 긴 단어만 예외적으로 끊음 */
   color: var(--ink);
   background: var(--bg);
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
+
+/* 문단은 마지막 줄에 한두 글자만 남지 않게, 제목·짧은 글은 줄 길이를 고르게 (크롬·엣지·웨일 최신) */
+.cap-text, .cap-a, .cap-q .q-row, .step-body, .card .v, .card .sum, .hint li { text-wrap: pretty; }
+h1, h2, h3, .step-title, .step-list li, .card-top h3, figcaption, .fig-note, .fig-sub, .sb-title { text-wrap: balance; }
+/* 숫자+단위(23.5°N, 10°~20°)가 줄 끝에서 떨어지지 않게 — engine.js fmtKo()가 감쌈 */
+.nw { white-space: nowrap; }
 
 /* 키보드 포커스 가시성 */
 :focus-visible { outline: 2.5px solid var(--accent); outline-offset: 2px; border-radius: 8px; }
@@ -106,6 +115,22 @@ body {
   letter-spacing: .03em; font-weight: 600;
 }
 .seg button .short { display: none; }
+
+/* 발표 모드 버튼 */
+.present-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: inherit; font-size: 14px; font-weight: 700; color: var(--ink);
+  background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+  padding: 0 14px; min-height: 48px; cursor: pointer; transition: all .15s ease;
+}
+.present-btn svg { width: 19px; height: 19px; flex: none; }
+.present-btn:hover { background: var(--accent-soft); border-color: rgba(43,111,227,.35); color: var(--accent); }
+
+kbd {
+  display: inline-block; min-width: 1.6em; padding: 1px 5px; border-radius: 5px;
+  font-family: var(--mono); font-size: .78em; font-weight: 700; line-height: 1.45; text-align: center;
+  color: var(--muted); background: #fff; border: 1px solid var(--line); border-bottom-width: 2px;
+}
 
 /* ============================================================
    레이아웃: 사이드바(좌) + 3D 무대
@@ -196,15 +221,6 @@ body {
   letter-spacing: .05em; margin-bottom: 6px;
 }
 .step-box .step-title { font-size: 16.5px; font-weight: 800; line-height: 1.35; margin-bottom: 8px; }
-.step-box .step-q {
-  display: flex; gap: 9px; align-items: flex-start;
-  margin-bottom: 11px; padding: 11px 12px;
-  background: #fff; border: 1px solid var(--line);
-  border-left: 3.5px solid var(--accent);
-  border-radius: 10px;
-  font-size: 13px; line-height: 1.6; color: var(--ink); font-weight: 500;
-}
-.step-box .step-q .q-mark { flex: none; font-size: 15px; }
 .step-box .step-body { font-size: 13.5px; line-height: 1.68; color: #37455f; }
 .step-box .step-body b { color: var(--ink); }
 .step-box .nav { display: flex; gap: 9px; margin-top: 13px; }
@@ -296,6 +312,17 @@ input[type="range"]::-moz-range-thumb {
 .hint b { color: var(--ink); font-weight: 700; }
 .hint ul { list-style: none; display: flex; flex-direction: column; gap: 7px; }
 .hint li { padding-left: 16px; position: relative; }
+.hint .keys { margin-top: 12px; padding-top: 11px; border-top: 1px dashed var(--line); }
+.hint .keys-title { font-size: 12px; font-weight: 800; color: var(--ink); margin-bottom: 7px; }
+.hint dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; align-items: center; font-size: 12.5px; }
+.hint dt { white-space: nowrap; }
+.hint dd { color: var(--muted); }
+.hint .guide-link {
+  display: block; margin-top: 12px; padding: 9px 12px; border-radius: 10px; text-align: center;
+  font-weight: 800; font-size: 13px; color: var(--accent); text-decoration: none;
+  background: var(--accent-soft); border: 1px solid rgba(43,111,227,.3);
+}
+.hint .guide-link:hover { background: #d8e6fc; }
 .hint li::before {
   content: ""; position: absolute; left: 2px; top: .62em;
   width: 6px; height: 6px; border-radius: 50%; background: var(--accent); opacity: .55;
@@ -362,11 +389,155 @@ input[type="range"]::-moz-range-thumb {
 
 /* 회전/조작 힌트 */
 .controls-hint {
-  position: absolute; bottom: 16px; right: 18px; z-index: 16;
+  position: absolute; top: 14px; right: 18px; z-index: 16;
   font-size: 12px; color: var(--muted); font-weight: 500;
   background: rgba(255,255,255,.85); border: 1px solid var(--line);
   padding: 7px 12px; border-radius: 10px; backdrop-filter: blur(5px);
 }
+
+/* ============================================================
+   장면 재생기 — 화면 자막 + 진행 막대
+   패널에 가리지 않는 영역(--inset-l / --inset-b, main.js가 설정) 안에서 아래 가운데 배치
+   ============================================================ */
+.stage { --inset-l: 0px; --inset-b: 0px; }
+.player {
+  position: absolute; z-index: 18;
+  left: calc(var(--inset-l) + 16px); right: 16px; bottom: calc(var(--inset-b) + 14px);
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  pointer-events: none;
+}
+.player > * { pointer-events: auto; }
+
+.cap {
+  width: min(780px, 100%);
+  background: rgba(255,255,255,.95); backdrop-filter: blur(8px);
+  border: 1px solid var(--line); border-radius: 18px;
+  box-shadow: var(--shadow); padding: 13px 20px 15px;
+}
+.cap.enter { animation: capIn .38s cubic-bezier(.2,.8,.2,1); }
+@keyframes capIn { from { opacity: .35; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.cap-step {
+  font-size: 12px; font-weight: 800; color: var(--accent); letter-spacing: .04em;
+  margin-bottom: 5px; white-space: pre-wrap;
+}
+.cap-text { font-size: clamp(16px, 0.9vw + 9px, 21px); line-height: 1.58; font-weight: 600; color: var(--ink); }
+.cap-text b {
+  color: var(--accent); font-weight: 800;
+  /* 장면의 움직임이 끝나면 핵심어에 밑줄이 그어짐 (engine.js settleTick) */
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat; background-position: 0 100%; background-size: 0% 2.5px;
+  transition: background-size .45s ease;
+}
+.cap-text.settled b { background-size: 100% 2.5px; }
+
+.cap-q {
+  margin-top: 11px; padding: 11px 13px 12px;
+  background: #fff8e6; border: 1px solid #f2e2b8; border-radius: 12px;
+}
+.cap-q[hidden], .cap-a[hidden], .a-btn[hidden] { display: none; }
+.cap-q .q-row { display: flex; gap: 9px; align-items: flex-start; font-size: clamp(14.5px, 0.6vw + 9px, 18px); font-weight: 700; line-height: 1.55; color: #5b420c; }
+.cap-q .q-mark { flex: none; }
+.a-btn {
+  margin-top: 9px; font-family: inherit; font-size: 13px; font-weight: 800; cursor: pointer;
+  color: #8a5d05; background: #fff; border: 1px solid #ecd49a; border-radius: 9px; padding: 6px 12px;
+}
+.a-btn:hover { background: #fff3d6; }
+.a-btn kbd { margin-left: 4px; }
+.cap-a {
+  margin-top: 9px; padding-top: 9px; border-top: 1px dashed #ecd49a;
+  font-size: clamp(14px, 0.5vw + 9px, 17px); line-height: 1.62; color: #4a3a17;
+  animation: capIn .3s ease;
+}
+.cap-a b { color: #b06a00; }
+
+.transport {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(255,255,255,.95); backdrop-filter: blur(8px);
+  border: 1px solid var(--line); border-radius: 999px; padding: 6px 8px;
+  box-shadow: var(--shadow-soft);
+}
+.tp {
+  width: 44px; height: 44px; border-radius: 50%; flex: none;
+  display: flex; align-items: center; justify-content: center;
+  font-family: inherit; font-size: 13px; font-weight: 800;
+  background: var(--panel-2); border: 1px solid var(--line); color: var(--ink); cursor: pointer;
+  transition: background .14s ease, transform .1s ease;
+}
+.tp svg { width: 20px; height: 20px; }
+.tp:hover:not(:disabled) { background: var(--accent-soft); }
+.tp:active:not(:disabled) { transform: scale(.94); }
+.tp:disabled { opacity: .35; cursor: not-allowed; }
+.tp.primary { width: 54px; height: 54px; background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 4px 12px rgba(43,111,227,.35); }
+.tp.primary:hover:not(:disabled) { background: #2360c8; }
+.tp.primary svg { width: 24px; height: 24px; }
+.tp.primary.step-end { background: #14805f; border-color: #14805f; box-shadow: 0 4px 12px rgba(20,128,95,.32); }
+.tp.auto { width: auto; border-radius: 999px; padding: 0 14px; }
+.tp.auto[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+.tp.speed { min-width: 64px; font-size: 12.5px; }
+.tp-sep { width: 1px; height: 26px; background: var(--line); margin: 0 2px; }
+
+.dots { display: flex; align-items: center; gap: 6px; padding: 0 4px; }
+.dot {
+  width: 11px; height: 11px; border-radius: 50%; padding: 0; cursor: pointer;
+  background: #d3ddec; border: 0; transition: all .2s ease;
+}
+.dot.done { background: #9dbbeb; }
+.dot.on { width: 28px; border-radius: 6px; background: var(--accent); }
+.dot.q { box-shadow: 0 0 0 2px #f0c35a inset; }
+.dot.q.on { box-shadow: none; background: #e0a22a; }
+
+/* 그림 자료 — 보이는 영역 왼쪽 위 */
+.fig {
+  position: absolute; z-index: 17; top: 14px; left: calc(var(--inset-l) + 16px);
+  width: min(340px, calc(100% - var(--inset-l) - 32px));
+  background: rgba(255,255,255,.96); border: 1px solid var(--line); border-radius: 14px;
+  box-shadow: var(--shadow); padding: 11px 13px 10px;
+  opacity: 0; transform: translateY(-6px); pointer-events: none;
+  transition: opacity .35s ease, transform .35s ease;
+}
+.fig.show { opacity: 1; transform: none; }
+.fig figcaption { font-size: 13px; font-weight: 800; color: var(--ink); margin-bottom: 4px; }
+.fig svg { width: 100%; height: auto; display: block; }
+.fig .t-hot  { font: 800 13px var(--font); fill: #c2412a; }
+.fig .t-cold { font: 800 12px var(--font); fill: #2f63c9; }
+.fig .t-move { font: 800 11px var(--font); fill: #e2503a; }
+.fig .t-ax   { font: 600 10px var(--font); fill: #6b7a93; }
+.fig-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 11.5px; color: var(--muted); font-weight: 600; }
+.fig-legend .ln { display: inline-block; width: 18px; height: 0; vertical-align: middle; margin-right: 5px; }
+.fig-legend .ln.absorb { border-top: 3px solid #f08a24; }
+.fig-legend .ln.emit { border-top: 2.5px dashed #3a4a66; }
+.fig .t-sun { font: 800 10px var(--font); fill: #7a4b00; }
+.fig .t-m { font: 800 11.5px var(--font); fill: var(--ink); }
+.fig .t-s { font: 600 10.5px var(--font); fill: #5c6b85; }
+.fig .t-n { font: 900 10px var(--font); fill: #1f2d45; }
+.fig .fig-sub { font-size: 11.5px; color: var(--muted); font-weight: 600; }
+.fig .fig-sub b { color: var(--ink); }
+.fig .fig-note { font-size: 12.5px; color: var(--muted); font-weight: 600; margin-top: 2px; }
+.fig .fig-note b { color: #b56a0c; }
+.fig-orbit { width: min(300px, calc(100% - var(--inset-l) - 32px)); }
+body.present .fig { width: min(440px, 40vw); }
+body.present .fig figcaption { font-size: 16px; }
+
+/* 발표 모드 — 상단바·패널을 숨기고 3D 화면과 자막을 크게 */
+.present-exit {
+  display: none; position: absolute; top: 14px; right: 16px; z-index: 22;
+  font-family: inherit; font-size: 13px; font-weight: 700; color: var(--muted);
+  background: rgba(255,255,255,.88); border: 1px solid var(--line); border-radius: 10px;
+  padding: 7px 11px; cursor: pointer; opacity: .55; transition: opacity .2s ease;
+}
+.present-exit:hover { opacity: 1; }
+body.present .topbar,
+body.present .sidebar,
+body.present .sidebar-handle,
+body.present .controls-hint { display: none; }
+body.present .layout { inset: 0; }
+body.present .present-exit { display: block; }
+body.present .cap { width: min(1080px, 100%); padding: 16px 28px 19px; }
+body.present .cap-step { font-size: 15px; }
+body.present .cap-text { font-size: clamp(20px, 1.5vw + 8px, 34px); }
+body.present .cap-q .q-row { font-size: clamp(18px, 1vw + 9px, 26px); }
+body.present .cap-a { font-size: clamp(17px, 0.9vw + 8px, 24px); }
+body.present .card { top: 60px; }
 
 /* 로딩 */
 .loading {
@@ -397,15 +568,18 @@ input[type="range"]::-moz-range-thumb {
   .seg button { padding: 8px 11px; font-size: 13px; }
   .card { right: 12px; top: 12px; width: 306px; }
   .controls-hint { display: none; }
+  .present-btn .full { display: none; }
+  .present-btn { padding: 0 11px; min-height: 44px; }
 }
 /* ============================================================
    모바일 하단 시트 — 사이드바가 화면 아래 시트로 전환
    평소: 축소 바(현재 단계 + ← →)만 보여 지구를 가리지 않음
    위로 스와이프: 패널 확장 / 확장 상태 좌우 스와이프: 단계 이동
+   휴대전화 + 세로로 세운 태블릿(가로 1100px 이하)에서 사용 — ui.js의 mqMobile과 같은 조건
    ============================================================ */
 .sheet-bar { display: none; }   /* 데스크톱에서는 숨김 */
 
-@media (max-width: 700px) {
+@media (max-width: 700px), (orientation: portrait) and (max-width: 1100px) {
   .sidebar {
     top: auto; left: 0; right: 0; bottom: 0;
     width: 100%; max-width: 100%;
@@ -449,13 +623,46 @@ input[type="range"]::-moz-range-thumb {
     color: var(--accent); letter-spacing: .05em;
   }
   .sb-title {
-    display: block; font-size: 13.5px; font-weight: 700; line-height: 1.35;
+    font-size: 13px; font-weight: 700; line-height: 1.3;
     color: var(--ink);
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    /* 단계 제목이 "…"로 잘리지 않게 두 줄까지 */
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
   }
 
   .sidebar-body { padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px)); }
   .card { top: 12px; }
+
+  /* 휴대전화: 장면 이동은 하단 바의 ← → 가 담당 — 진행 막대는 숨기고 자막만 */
+  .player { left: 10px; right: 10px; bottom: calc(var(--inset-b) + 8px); }
+  .transport { display: none; }
+  .cap { padding: 10px 14px 12px; border-radius: 14px; }
+  .cap-step { font-size: 11px; margin-bottom: 3px; }
+  .cap-text { font-size: 14.5px; line-height: 1.52; }
+  .cap-q .q-row { font-size: 14px; }
+  .present-btn { display: none; }
+  .fig, .fig-orbit { width: min(215px, calc(100% - 24px)); left: 10px; top: 10px; padding: 7px 9px; }
+  .fig figcaption { font-size: 12px; }
+  .fig .fig-sub, .fig-legend { display: none; }
+  .fig .fig-note { font-size: 11.5px; }
+}
+/* 세로 태블릿: 휴대전화보다 화면이 넓으므로 자막을 조금 크게 */
+@media (orientation: portrait) and (min-width: 701px) and (max-width: 1100px) {
+  .cap-text { font-size: 17.5px; }
+  .cap-q .q-row { font-size: 16px; }
+  .fig, .fig-orbit { width: min(280px, calc(100% - 24px)); }
+}
+/* 세로 높이가 낮은 노트북(1366×768 등): 자막·진행 막대를 조금 작게 해 3D 화면을 넓게 */
+@media (max-height: 820px) and (min-width: 701px) and (orientation: landscape) {
+  .cap { padding: 10px 18px 12px; }
+  .cap-step { margin-bottom: 3px; }
+  .cap-text { font-size: clamp(15px, 0.7vw + 8.5px, 18.5px); line-height: 1.5; }
+  .cap-q { margin-top: 8px; padding: 8px 11px 9px; }
+  .cap-q .q-row { font-size: 14.5px; }
+  .a-btn { margin-top: 6px; padding: 4px 10px; }
+  .player { gap: 7px; bottom: calc(var(--inset-b) + 10px); }
+  .tp { width: 40px; height: 40px; }
+  .tp.primary { width: 48px; height: 48px; }
+  .transport { padding: 4px 7px; }
 }
 
 @media (max-width: 520px) {
@@ -467,5 +674,6 @@ input[type="range"]::-moz-range-thumb {
 /* 모션 최소화 선호 존중 */
 @media (prefers-reduced-motion: reduce) {
   * { transition-duration: .01ms !important; }
+  .cap.enter, .cap-a { animation: none; }
   .spinner { animation: none; }
 }
