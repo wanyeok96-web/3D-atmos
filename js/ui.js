@@ -1,44 +1,12 @@
 /* ============================================================
    대기대순환 3D — ui.js
-   조작 패널 — 표시할 내용(레이어) · 보기 전환 · 사이드바/하단 시트 · 계절 · 이해 순서
+   조작 패널 — 보기 전환 · 사이드바/하단 시트 · 계절(내부) · 이해하기(단계 목록)
    ============================================================ */
 "use strict";
 
 /* ============================================================
-   12. UI — 표시할 내용(레이어), 보기 전환, 사이드바, 계절, 이해 순서
+   12. UI — 보기 전환, 사이드바, 계절, 이해하기 (레이어는 장면이 정함 — 패널 토글 없음)
    ============================================================ */
-function buildLayerList() {
-  const list = document.getElementById("layer-list");
-  list.innerHTML = "";
-  LAYER_DEFS.forEach(d => {
-    const row = document.createElement("div");
-    row.className = "layer";
-    row.dataset.layer = d.id;
-    row.setAttribute("role", "checkbox");
-    row.setAttribute("tabindex", "0");
-    row.setAttribute("aria-checked", String(state.layers[d.id]));
-    row.innerHTML =
-      '<span class="swatch" style="background:' + d.color + '"></span>' +
-      '<span class="name">' + d.name + "<small>" + d.sub + "</small></span>" +
-      '<span class="switch"></span>';
-    const toggle = function () {
-      state.layers[d.id] = !state.layers[d.id];
-      if (needsGlobeLayers(state.layers)) ensureGlobeLayers();
-      row.setAttribute("aria-checked", String(state.layers[d.id]));
-      applyVisibility();
-    };
-    row.addEventListener("click", toggle);
-    row.addEventListener("keydown", function (ev) {
-      if (ev.key === " " || ev.key === "Enter") { ev.preventDefault(); toggle(); }
-    });
-    list.appendChild(row);
-  });
-}
-function refreshLayerList() {
-  document.querySelectorAll("#layer-list .layer").forEach(function (row) {
-    row.setAttribute("aria-checked", String(state.layers[row.dataset.layer]));
-  });
-}
 /* --- 보기 전환 --- */
 function setView(v) {
   const changed = state.view !== v;

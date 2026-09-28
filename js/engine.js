@@ -93,7 +93,6 @@ function goBeat(i, k) {
   if (state.view !== s.view) changeView(s.view, flyCam);   // 지구본 ↔ 단면: 자르기/감기 전환
   else if (needCam) flyCam();
 
-  refreshLayerList();
   applyVisibility();
   hideCard();
   updateCrossSun();
@@ -241,14 +240,7 @@ function renderPlayer() {
   $("tp-replay").disabled = !started;
   $("tp-auto").setAttribute("aria-pressed", String(player.auto));
 
-  /* 패널: 단계 카드 */
-  $("step-count").textContent = started
-    ? "단계 " + (i + 1) + " / " + STEPS.length + "  ·  장면 " + (k + 1) + " / " + st.beats.length : "시작하기";
-  $("step-title").innerHTML = started ? fmtKo(st.title) : "1단계부터 차례로 진행해 보세요";
-  $("step-body").innerHTML = started ? fmtKo(st.body)
-    : "화면 아래 <b>▶</b>(또는 키보드 <b>→</b>)를 누를 때마다 설명과 함께 장면이 하나씩 진행됩니다. 위 목록에서 단계를 바로 고를 수도 있어요.";
-  $("step-prev").disabled = !started || i <= 0;
-  $("step-next").disabled = started && i >= STEPS.length - 1;
+  /* 패널: 단계 목록 표시 */
   document.querySelectorAll("#step-list li").forEach(function (li, n) {
     li.classList.toggle("on", n === i);
     li.setAttribute("aria-current", n === i ? "step" : "false");
@@ -298,11 +290,28 @@ $("tp-speed").addEventListener("click", cycleSpeed);
 $("cap-a-btn").addEventListener("click", toggleAnswer);
 $("present-btn").addEventListener("click", function () { setPresent(!isPresent()); });
 $("present-exit").addEventListener("click", function () { setPresent(false); });
-$("step-prev").addEventListener("click", prevStep);
-$("step-next").addEventListener("click", function () { if (state.stepIndex < 0) goStep(0); else nextStep(); });
+
+/* ------------------------------------------------------------
+   이용 방법 안내 창 — 사이드바 하단 버튼으로 열고, 닫기·바깥·Esc로 닫음
+   ------------------------------------------------------------ */
+function isHelpOpen() { return !$("help-modal").hidden; }
+let helpReturnFocus = null;
+function openHelp() {
+  helpReturnFocus = document.activeElement;
+  $("help-modal").hidden = false;
+  $("help-modal").querySelector(".modal-x").focus();
+}
+function closeHelp() {
+  $("help-modal").hidden = true;
+  if (helpReturnFocus && helpReturnFocus.focus) helpReturnFocus.focus();
+}
+$("help-btn").addEventListener("click", openHelp);
+$("help-modal").querySelectorAll("[data-close]").forEach(function (el) { el.addEventListener("click", closeHelp); });
 
 document.addEventListener("keydown", function (e) {
   if (e.altKey || e.ctrlKey || e.metaKey) return;
+  /* 안내 창이 열려 있으면 Esc로 닫기만 하고, 장면 이동 키는 막음 */
+  if (isHelpOpen()) { if (e.key === "Escape") { e.preventDefault(); closeHelp(); } return; }
   const t = e.target, tag = t && t.tagName;
   if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || (t && t.isContentEditable)) return;
   /* 버튼·토글에 포커스가 있으면 Space/Enter는 그 컨트롤이 처리 */

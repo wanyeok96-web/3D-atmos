@@ -153,7 +153,6 @@ function loop(now) {
    ============================================================ */
 function init() {
   buildGlobeShell();
-  buildLayerList();
   buildStepList();
   buildEnergyFigure();
   buildOrbitFigure();

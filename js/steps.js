@@ -61,7 +61,7 @@ const NAMES = ["name-hadley", "name-ferrel", "name-polar"];
 
 const STEPS = [
   /* ---------------------------------------------------------- 1 */
-  { title: "대기대순환이란? — 위도별 일사량과 열적 불균형", short: "위도별 일사량과 열적 불균형",
+  { title: "대기대순환이란?", short: "위도별 일사량과 열적 불균형",
     body: "지구는 둥글기 때문에 위도에 따라 태양 에너지를 받는 <b>면적이 다릅니다</b>. 적도는 <b>좁은 면적에 에너지가 집중</b>되어 기온이 높고, 극지방은 <b>넓은 면적으로 분산</b>되어 기온이 낮습니다. 이 <b>열적 불균형</b>을 해소하는 지구 규모의 공기 흐름이 <b>대기대순환</b>입니다.",
     base: { view: "globe", layers: layersOf({ insol: true, grid: true }), focus: null,
             hide: ["beam-hot", "beam-cold", "patch-hot", "patch-cold", "temp"],
@@ -148,7 +148,7 @@ const STEPS = [
     ] },
 
   /* ---------------------------------------------------------- 5 */
-  { title: "강수 — 저기압은 비, 고기압은 맑음", short: "기압대와 강수",
+  { title: "강수", short: "기압대와 강수",
     body: "공기가 <b>올라가는 곳(저기압)</b>에서는 공기가 식으며 구름이 만들어져 <b>비가 많이</b> 내립니다. 공기가 <b>내려오는 곳(고기압)</b>에서는 구름이 생기기 어려워 <b>맑고 건조</b>합니다.",
     base: { view: "cross", layers: layersOf({ grid: true, belts: true, cells: true, precip: true }), focus: null,
             hide: ["dry", "gear"], pressure: true, season: 0, cam: { z: 1 } },
@@ -166,7 +166,7 @@ const STEPS = [
     ] },
 
   /* ---------------------------------------------------------- 6 */
-  { title: "바람 — 무역풍·편서풍·극동풍", short: "지표의 바람",
+  { title: "바람", short: "지표의 바람",
     body: "지표에서 공기는 <b>고기압에서 저기압으로</b> 이동합니다. 지구 자전 때문에 바람 방향이 <b>휘어지면서</b>(전향력), 30°→적도의 <b>무역풍</b>, 30°→60°의 <b>편서풍</b>, 극→60°의 <b>극동풍</b>이 나타납니다.",
     base: { view: "globe", layers: layersOf({ belts: true, winds: true, coriolis: false }), focus: null, hide: [],
             pressure: true, season: 0, cam: { rx: 0.20, ry: -0.55, z: 0.93 } },
@@ -182,12 +182,13 @@ const STEPS = [
         focus: ["wind-wester", "belt30", "belt60"], cam: { rx: 0.45, z: 0.95 } },
       { cap: "극에서 60°로 부는 바람 — <b>극동풍</b>. 동쪽에서 불어와요.",
         focus: ["wind-polar", "belt60", "belt90"], cam: { rx: 0.75, z: 0.95 } },
-      { cap: "왼쪽 패널에서 <b>바람 휘어짐</b>을 껐다 켜면 바람이 곧게 폈다가 다시 휘어져요.",
+      { cap: "휘어짐이 없다면 바람은 다시 <b>남북으로 곧게</b> 불어요. 지구 자전이 <b>세 가지 바람</b>을 만든 거예요.",
+        layers: { coriolis: false },   // 화살표가 곧게 펴지며 비교 (패널 토글 대신)
         focus: null, cam: { rx: 0.20, z: 0.93 } }
     ] },
 
   /* ---------------------------------------------------------- 7 */
-  { title: "결론 — 대기대순환과 위도별 기후", short: "대기대순환과 세계의 기후",
+  { title: "결론", short: "대기대순환과 세계의 기후",
     body: "위도별 <b>일사량 차이</b> → <b>열적 불균형</b> → <b>대기대순환</b> → 위도대별 <b>기압·강수·바람</b>의 차이 → 위도대별로 <b>다양한 기후</b>가 나타납니다. 지역 마커나 색깔 띠를 눌러 위도대별 기후를 확인해 보세요.",
     base: { view: "globe", layers: layersOf({ cells: true, belts: true, winds: true, coriolis: true, precip: true }),
             focus: null, hide: [], pressure: true, season: 0, cam: { rx: 0.44, ry: -0.55, z: 1.06 } },
