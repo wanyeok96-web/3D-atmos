@@ -80,7 +80,7 @@ js/
 - `beatState(i,k)` = 단계 `base` + 1..k 장면 변경분 **누적** → 앞뒤 이동해도 정확히 복원.
 - `goBeat(i,k)`: `forward`(한 장면 앞으로)일 때만 애니메이션, 아니면 `snapGrows()`·`snapWinds()`·계절 즉시.
 - 보기가 바뀌면 `changeView()` → 단면 자르기/감기 전환(`startViewTransition`), 끝난 뒤 카메라 이동.
-- 장면 필드: `cap, view, layers, focus, hide, pressure, season, cam{rx,ry,z}, q, a, draw, parcel, fig, show` (steps.js 머리 주석 참고).
+- 장면 필드: `cap, view, layers, focus, hide, pressure, season, cam{rx,ry,z}, draw, parcel, fig, show` (질문 `q`·답 `a`는 엔진이 여전히 지원하지만 2026-09-28 사용자 요청으로 모든 장면에서 삭제 — 다시 넣지 말 것) (steps.js 머리 주석 참고).
 - `show`: 기본 숨김 요소(OPTIONAL_TAGS: spin, sunlat, front60, rg-*)를 보이게. 다음 장면에도 유지, `show: []`로 숨김.
 
 ### 3-3. 표시 관리 (core.js 4절) — 페이드·강조·숨김
@@ -244,3 +244,4 @@ finishViewTransition(); finishSeasonAnim(); ({n, errs})   // 기대: n=49, errs=
 | 2026-09-23 | Claude Code | **A 글자 정비 완료(5절 1·2·3·12)**: 한국어 줄바꿈(keep-all·pretty/balance·fmtKo), 3D 라벨 최소 크기+가장자리 라벨 흐림, Pretendard 추림본 AocSans 내장(OFL 동봉), 자막·답 다듬기. 46장면 회귀 테스트 통과. 다음: B-1 |
 | 2026-09-28 | Claude Code | **B-1·C·B-2 완료(5절 4~11·13)**: 순환 고리 기온 색+흐르는 줄무늬, 바람 화살표 개편(28개·꼬리 가늘게·흰 테두리·줄무늬, 무역풍 청록), 단면 상승·하강 흐름 띠, 지구 사진 밝기 조절, 시간 토큰 DUR, 장면 안 순서·자막 밑줄·강조 밖 움직임 정지, 반복 전환 1.1초, 자동 재생 대기 보정, 태양 일러스트 원반+단면 빛줄기, 기압대 띠 반투명·강수 아이콘 14개, 공기 덩어리 온도계 기호. 46장면 회귀 테스트 통과, 셰이더 오류 0. 5절 전부 완료 |
 | 2026-09-28 | Claude Code | **2·3단계 공기 흐름 보완**: 2단계 30°에서 두 갈래(해들리 지표+페렐 첫 구간 동시, 공기 덩어리 split30), 3단계 60°에서 만남(한대 전선·front60)→극·페렐 동시 상승→상층에서 갈라져 두 고리 완성, 이름표 태그 분리. 46→49장면, 회귀 테스트 통과 |
+| 2026-09-28 | Claude Code | **질문·답 보기 전부 삭제**(사용자 요청): steps.js의 q/a 8개 제거, 화면 도움말·README·교사용 안내에서 답 보기/A키/노란 점 설명 제거. 장면 수 49 유지 |
